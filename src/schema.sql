@@ -1,35 +1,45 @@
+--REPORT 1
+SELECT *
+FROM drivers
+WHERE 
+    ( ? = 'ALL' OR license_type = ? )
+AND ( ? = 'ALL' OR license_status = ? )
+AND ( ? = 'ALL' OR sex = ? )
+AND (age BETWEEN ? AND ?);
 
---DRIVER TABLE WITH VALIDATION
-CREATE TABLE DRIVER (
-    License_number VARCHAR(20) PRIMARY KEY NOT NULL,
-    Full_name VARCHAR(100) NOT NULL,
-    Birthday DATE NOT NULL,
-    Sex VARCHAR(10) NOT NULL,
-    Address VARCHAR(100) NOT NULL,
-    Age INT NOT NULL,
-    License_type ENUM(
-        'Student',
-        'Non-Professional',
-        'Professional'
-    ) NOT NULL,
-    License_status VARCHAR(20) NOT NULL,
-    License_issuance_date DATE NOT NULL,
-    License_expiration_date DATE NOT NULL
-);
+--REPORT 2
+SELECT *
+FROM vehicles
+WHERE license_number = ?;
 
--- VEHICLE TABLE WITH FOREIGN KEY OF DRIVER 
-CREATE TABLE VEHICLE (
-    Plate_number VARCHAR(20) PRIMARY KEY NOT NULL,
-    Engine_number VARCHAR(30) UNIQUE NOT NULL,
-    Chassis_number VARCHAR(30) UNIQUE NOT NULL,
-    Model VARCHAR(50) NOT NULL,
-    Color VARCHAR(20) NOT NULL,
-    Vehicle_type VARCHAR(100) NOT NULL,
-    Make VARCHAR(50) NOT NULL,
-    Year INT NOT NULL,
-    License_number VARCHAR(20) NOT NULL,
+--REPORT 3
+SELECT v.*
+FROM vehicles v
+JOIN vehicle_registrations r
+    ON v.plate_number = r.plate_number
+WHERE r.expiration_date < ?;
 
-    CONSTRAINT fk_vehicle_driver
-    FOREIGN KEY (License_number)
-    REFERENCES DRIVER (License_number)
-);
+--REPORT 4
+SELECT *
+FROM drivers
+WHERE license_status IN ('Expired', 'Suspended', 'Revoked');
+
+--REPORT 5
+SELECT *
+FROM traffic_violations
+WHERE license_number = ?
+AND violation_date BETWEEN ? AND ?;
+
+--REPORT 6
+SELECT 
+    violation_type,
+    COUNT(*) AS total_violations
+FROM traffic_violations
+WHERE YEAR(violation_date) = ?
+GROUP BY violation_type;
+
+--REPORT 7
+SELECT *
+FROM traffic_violations
+WHERE location LIKE CONCAT('%', ?, '%');
+
