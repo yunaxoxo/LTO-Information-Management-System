@@ -2,7 +2,7 @@
 name: 📋 Team Task Tracker
 about: Use this template to assign, estimate, and track work for team members.
 title: "[TASK]: "
-labels: ["todo"]
+labels: ["to do"]
 assignees: ""
 ---
 
