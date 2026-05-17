@@ -34,5 +34,5 @@ _Example: Add a "Forgot Password" link to the login page so users can recover ac
 
 ## 📅 Timeline & Estimation
 
-- **Story Points / Estimate:** (e.g., 2 Points)
+- **Story Points / Estimate:** 2 Points <!-- Scale: 1 = Easy (< half day), 2 = Medium (1 day), 3 = High/Complex (1-2 days) -->
 - **Target Completion Date:** YYYY-MM-DD
