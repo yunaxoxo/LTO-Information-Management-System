@@ -12,3 +12,7 @@ def css_style(style):
         st.error(f"Couldn't find CSS file at: {css_path}")
 
 css_style("style.css")
+
+st.title("Driver Registry")
+st.markdown("Manage and monitor driver information, including licenses, violations, and other details.")
+st.markdown("---")
