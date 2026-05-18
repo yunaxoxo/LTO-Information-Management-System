@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 import pandas as pd
 import streamlit as st
@@ -55,6 +56,7 @@ tab1, tab2, tab3 = st.tabs(["Driver List", "Add Driver", "Edit/Delete Driver"])
 
 with tab1: 
     if drivers:
+        # Convert to DataFrame 
         df = pd.DataFrame(drivers)
         rename_map = { 
             "full_name": "Full Name",
@@ -68,11 +70,50 @@ with tab1:
             "license_expiration_date": "Expiration",
             "age": "Age",
         }
+        # Rename columns for better display
         df.rename(columns=rename_map, inplace=True)
         cols = ["Full Name", " Number", " Type", " Status", "Birthday",
                 "Sex", "Address", "Issuance", "Expiration", "Age"]
         cols = [col for col in cols if col in df.columns]
         st.dataframe(df[cols], use_container_width=True)
-        st.caption(f"Showing {total:,} records")
     else:
         st.info("No drivers found with the selected filters.")
+
+# Add new driver
+with tab2: 
+    st.markdown("Add New Driver")
+    st.caption("License format: XXX-XX-XXXXXX")
+    with st.form("add_driver_form", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            license_number = st.text_input("License Number*", placeholder="XXX-XX-XXXXXX")
+            full_name = st.text_input("Full Name*", placeholder="Juan Dela Cruz")
+            birthday = st.date_input("Birthday*", min_value=date(1900, 1, 1), max_value=date.today())
+            sex = st.selectbox("Sex", ["M", "F"])
+            address = st.text_input("Address*", placeholder="City, Province")
+        with col2:
+            license_type_in = st.selectbox("License Type *", TYPE_OPTIONS)
+            license_status = st.selectbox("License Status *", STATUS_OPTIONS)
+            issuance_date = st.date_input("Issuance Date *", value=date.today())
+            expiration_date = st.date_input("Expiration Date *", value=date.today())
+        submitted = st.form_submit_button("Add Driver", use_container_width=True)
+        if submitted:
+            if not all([license_number, full_name, address]):
+                st.error("License number, full name, and address are required.")
+            else:
+                try:
+                    dc.add_driver({
+                        "license_number": license_number.strip().upper(),
+                        "full_name": full_name.strip(),
+                        "birthday": birthday,
+                        "sex": sex,
+                        "address": address.strip(),
+                        "license_type": license_type_in,
+                        "license_status": license_status,
+                        "license_issuance_date": issuance_date,
+                        "license_expiration_date": expiration_date,
+                    })
+                    st.success(f"✅ Driver '{full_name}' added successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error adding driver: {e}")
