@@ -48,6 +48,9 @@ except Exception as e:
 
 #Pagisipan q pa if lagyan metrics 
 
+# Display driver data in a table
+# Tabs for driver list, add driver, edit/delete driver 
+# Will consider using buttons of add, edit, delete in the table itself for better UX 
 tab1, tab2, tab3 = st.tabs(["Driver List", "Add Driver", "Edit/Delete Driver"])
 
 with tab1: 
@@ -55,9 +58,9 @@ with tab1:
         df = pd.DataFrame(drivers)
         rename_map = { 
             "full_name": "Full Name",
-            "license_number": "License Number",
-            "license_type": "License Type",
-            "license_status": "License Status",
+            "license_number": " Number",
+            "license_type": " Type",
+            "license_status": " Status",
             "birthday": "Birthday",
             "sex": "Sex",
             "address": "Address",
@@ -65,3 +68,11 @@ with tab1:
             "license_expiration_date": "Expiration",
             "age": "Age",
         }
+        df.rename(columns=rename_map, inplace=True)
+        cols = ["Full Name", " Number", " Type", " Status", "Birthday",
+                "Sex", "Address", "Issuance", "Expiration", "Age"]
+        cols = [col for col in cols if col in df.columns]
+        st.dataframe(df[cols], use_container_width=True)
+        st.caption(f"Showing {total:,} records")
+    else:
+        st.info("No drivers found with the selected filters.")
