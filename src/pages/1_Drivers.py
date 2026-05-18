@@ -133,7 +133,7 @@ with tab2:
 with tab3:
     st.markdown("#### Edit or Delete a Driver")
     search_ln = st.text_input("Search by License Number", placeholder="A01-15-100001")
-    
+
     if not search_ln:
         st.stop() 
 
@@ -148,3 +148,19 @@ with tab3:
     if not d:
         st.warning("No driver found with that license number.")
         st.stop()
+
+    # Choose if user wants to edit or delete the driver
+    st.markdown(f"**Found:** {d['full_name']} — `{d['license_number']}`")
+    action = st.radio("Action", ["Edit", "Delete"], horizontal=True)
+
+    # DELETE
+    if action == "Delete":
+        st.warning(f"⚠️ This will permanently delete **{d['full_name']}** and all linked records.")
+        if st.button("Confirm Delete", type="primary"):
+            try:
+                dc.delete_driver(d["license_number"])
+                st.success("Driver deleted.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error deleting record: {e}")
+                
