@@ -1,14 +1,10 @@
-# Database connection logic
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+# DATABASE connection logic
+import streamlit as st
 
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST'),
-    'port': int(os.getenv('DB_PORT', 3306)),
-    # Check sql file for credentials
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'), 
-    'database': os.getenv('DB_NAME')
+    "host": st.secrets["DB_HOST"],
+    "port": st.secrets["DB_PORT"],
+    "user": st.secrets["DB_USER"],
+    "password": st.secrets["DB_PASSWORD"],
+    "database": st.secrets["DB_NAME"],
 }
