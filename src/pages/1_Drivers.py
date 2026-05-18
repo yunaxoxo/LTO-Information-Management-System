@@ -129,3 +129,22 @@ with tab2:
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding driver: {e}")
+
+with tab3:
+    st.markdown("#### Edit or Delete a Driver")
+    search_ln = st.text_input("Search by License Number", placeholder="A01-15-100001")
+    
+    if not search_ln:
+        st.stop() 
+
+    # Search for Driver Data
+    d = None 
+    try:
+        d = dc.get_driver_by_license(search_ln)
+    except Exception as e:
+        st.error(f"Failed to fetch driver data: {e}")
+        st.stop()
+
+    if not d:
+        st.warning("No driver found with that license number.")
+        st.stop()
