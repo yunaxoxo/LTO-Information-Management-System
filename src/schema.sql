@@ -1,5 +1,10 @@
+CREATE OR REPLACE USER 'lto_admin'@'localhost' IDENTIFIED BY 'LtoProject2026!';
+
+DROP DATABASE IF EXISTS `lto_system`;
 CREATE DATABASE IF NOT EXISTS `lto_system`;
 USE `lto_system`;
+
+GRANT ALL ON lto_system.* TO 'lto_admin'@'localhost';
 
 SET FOREIGN_KEY_CHECKS = 0;
 
