@@ -1,4 +1,5 @@
 from pathlib import Path
+import pandas as pd
 import streamlit as st
 from controllers import driver_controller as dc
 
@@ -36,7 +37,7 @@ with st.sidebar:
 try: 
     drivers = dc.get_all_drivers(
         license_type=license_type,
-        status=status
+        status=status,
         age_min=age_range[0],
         age_max=age_range[1],
         sex=sex_filter
@@ -45,6 +46,22 @@ except Exception as e:
     st.error(f"Error fetching drivers: {e}")
     drivers = []
 
-total = len(drivers) if drivers is not None else 0
-valid_count = sum(1 for d in drivers if d.get("license_status") == "Valid") if drivers else 0
-expired_count = sum(1 for d in drivers if d.get("license_status") == "Expired") if drivers else 0 
+#Pagisipan q pa if lagyan metrics 
+
+tab1, tab2, tab3 = st.tabs(["Driver List", "Add Driver", "Edit/Delete Driver"])
+
+with tab1: 
+    if drivers:
+        df = pd.DataFrame(drivers)
+        rename_map = { 
+            "full_name": "Full Name",
+            "license_number": "License Number",
+            "license_type": "License Type",
+            "license_status": "License Status",
+            "birthday": "Birthday",
+            "sex": "Sex",
+            "address": "Address",
+            "license_issuance_date": "Issuance",
+            "license_expiration_date": "Expiration",
+            "age": "Age",
+        }
