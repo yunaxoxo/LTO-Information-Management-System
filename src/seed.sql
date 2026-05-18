@@ -19,7 +19,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- DRIVERS TABLE (100 Records)
 -- ========================================================
 CREATE TABLE drivers (
-    license_number VARCHAR(15) PRIMARY KEY NOT NULL CHECK (license_number REGEXP '^[A-Z][0-9]{2}-[0-9]{2}-[0-9]{6}$'),
+    license_number VARCHAR(20) PRIMARY KEY NOT NULL CHECK (license_number REGEXP '^[A-Z][0-9]{2}-[0-9]{2}-[0-9]{6}$'),
     full_name VARCHAR(100) NOT NULL CHECK (LENGTH(TRIM(full_name)) >= 2), 
     birthday DATE NOT NULL,
     sex VARCHAR(1) NOT NULL CHECK (sex IN ('M', 'F')), 
@@ -144,15 +144,15 @@ INSERT INTO drivers (license_number, full_name, birthday, sex, address, license_
 -- VEHICLES TABLE (120 Records)
 -- ========================================================
 CREATE TABLE vehicles (
-  plate_number VARCHAR(7) PRIMARY KEY NOT NULL CHECK (LENGTH(TRIM(plate_number)) BETWEEN 5 AND 7),
-  engine_number VARCHAR(17) NOT NULL, 
-  chassis_number VARCHAR(17) NOT NULL, 
+  plate_number VARCHAR(20) PRIMARY KEY NOT NULL CHECK (LENGTH(TRIM(plate_number)) BETWEEN 5 AND 7),
+  engine_number VARCHAR(20) NOT NULL, 
+  chassis_number VARCHAR(20) NOT NULL, 
   make VARCHAR(30) NOT NULL,
   model VARCHAR(30) NOT NULL CHECK (LENGTH(TRIM(model)) >= 1),
   year INT NOT NULL CHECK (year BETWEEN 1900 AND 2027), 
   color VARCHAR(30) NOT NULL, 
   vehicle_type VARCHAR(30) NOT NULL,
-  license_number VARCHAR(15) NOT NULL,
+  license_number VARCHAR(20) NOT NULL,
   CONSTRAINT uk_vehicle_engine_number UNIQUE(engine_number),
   CONSTRAINT uk_vehicle_chassis_number UNIQUE(chassis_number),
   CONSTRAINT fk_vehicle_license_number FOREIGN KEY (license_number) REFERENCES drivers (license_number) ON DELETE RESTRICT
@@ -302,11 +302,11 @@ INSERT INTO vehicles (plate_number, engine_number, chassis_number, make, model, 
 -- VEHICLE REGISTRATIONS TABLE (120 Records)
 -- ========================================================
 CREATE TABLE `vehicle_registrations` (
-  registration_number VARCHAR(15) PRIMARY KEY NOT NULL,
+  registration_number VARCHAR(20) PRIMARY KEY NOT NULL,
   registration_date DATE NOT NULL,
   expiration_date DATE NOT NULL, 
   registration_status ENUM('Active', 'Expired', 'Suspended') NOT NULL DEFAULT 'Active',
-  plate_number VARCHAR(7) NOT NULL,
+  plate_number VARCHAR(20) NOT NULL,
   CONSTRAINT chk_registration_lifetime CHECK (expiration_date > registration_date),
   CONSTRAINT fk_registration_vehicle FOREIGN KEY (plate_number) REFERENCES vehicles (plate_number) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
@@ -455,8 +455,8 @@ CREATE TABLE `traffic_violations` (
    apprehending_officer VARCHAR(100) NOT NULL,
    violation_status ENUM('Unpaid', 'Paid', 'Contested') NOT NULL DEFAULT 'Unpaid',
    fine_amount INT NOT NULL CHECK (fine_amount >= 0),
-   license_number VARCHAR(15) NOT NULL,
-   plate_number VARCHAR(7), 
+   license_number VARCHAR(20) NOT NULL,
+   plate_number VARCHAR(20), 
    CONSTRAINT fk_violation_driver FOREIGN KEY (license_number) REFERENCES drivers (license_number) ON DELETE RESTRICT,
    CONSTRAINT fk_violation_vehicle FOREIGN KEY (plate_number) REFERENCES vehicles (plate_number) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
