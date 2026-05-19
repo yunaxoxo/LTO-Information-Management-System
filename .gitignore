@@ -1,9 +1,9 @@
 .DS_Store
 .streamlit/*
+!.streamlit/secrets.toml.example
+src/.streamlit/*
+!src/.streamlit/secrets.toml.example
 .vscode
-<<<<<<< HEAD
 __pycache__/
-=======
 db/*
 .ruff*
->>>>>>> main

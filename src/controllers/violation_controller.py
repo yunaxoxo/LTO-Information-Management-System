@@ -1,19 +1,19 @@
 # Controller for traffic violation operations
 # Validates all inputs before delegating to the service layer
-from models.violation_model import Violation
-from services import violation_service
 from db.query_helpers import (
-    validate_not_empty,
-    validate_in_set,
-    validate_regex,
-    validate_positive_int,
-    sanitize_string,
-    to_date_string,
-    to_datetime_string,
     LICENSE_NUMBER_REGEX,
     TOP_NUMBER_REGEX,
     VALID_VIOLATION_STATUSES,
+    sanitize_string,
+    to_date_string,
+    to_datetime_string,
+    validate_in_set,
+    validate_not_empty,
+    validate_positive_int,
+    validate_regex,
 )
+from models.violation_model import Violation
+from services import violation_service
 
 
 def _build_violation(data: dict) -> Violation:
@@ -26,9 +26,13 @@ def _build_violation(data: dict) -> Violation:
 
     violation_type = sanitize_string(data.get("violation_type", ""), "Violation Type")
     location = sanitize_string(data.get("location", ""), "Location")
-    officer = sanitize_string(data.get("apprehending_officer", ""), "Apprehending Officer")
+    officer = sanitize_string(
+        data.get("apprehending_officer", ""), "Apprehending Officer"
+    )
 
-    violation_status = sanitize_string(data.get("violation_status", ""), "Violation Status")
+    violation_status = sanitize_string(
+        data.get("violation_status", ""), "Violation Status"
+    )
     validate_in_set(violation_status, VALID_VIOLATION_STATUSES, "Violation Status")
 
     # Fine amount must be a non-negative integer
@@ -67,6 +71,7 @@ def _build_violation(data: dict) -> Violation:
 # CRUD Operations
 # ============================================================
 
+
 def create_violation(data: dict) -> str:
     """Validates input and records a new traffic violation."""
     violation = _build_violation(data)
@@ -90,6 +95,7 @@ def delete_violation(top_number: str) -> str:
 # Read / Report Operations
 # ============================================================
 
+
 def get_violations_by_criteria(filters: dict) -> list:
     """Retrieves violations matching user-selected filter criteria."""
     return violation_service.fetch_traffic_violations_by_criteria(
@@ -97,6 +103,9 @@ def get_violations_by_criteria(filters: dict) -> list:
         violation_status=filters.get("violation_status", "ALL"),
         license_number=filters.get("license_number", "ALL"),
         plate_number=filters.get("plate_number", "ALL"),
+        location_like=filters.get("location_like", ""),
+        date_from=filters.get("date_from"),
+        date_to=filters.get("date_to"),
     )
 
 

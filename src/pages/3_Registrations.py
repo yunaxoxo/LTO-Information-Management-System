@@ -15,40 +15,45 @@ st.title("Vehicle Registrations")
 st.markdown("Manage and track vehicle registration records, validity periods, and registration status.")
 st.markdown("---")
 
-STATUS_OPTIONS = ["Active", "Expired", "Suspended"]
-VEHICLE_CATEGORIES = [
-    "All Categories", "Sedan", "SUV", "Hatchback", "MPV", "Pickup",
-    "Van", "Coupe", "Convertible", "Commercial Truck", "Bus", "Light Truck",
-]
+#  Filter option constants  #
+STATUS_FILTER_OPTIONS = ["All Statuses", "Active", "Expired", "Suspended"]
+STATUS_OPTS           = [s for s in STATUS_FILTER_OPTIONS if s != "All Statuses"]
 
+#  Session state  #
 if "reg_filters" not in st.session_state:
     st.session_state.reg_filters = {
-        "statuses":        ["Active"],
-        "vehicle_category": "All Categories",
-        "expired_as_of":   None,
+        "registration_status": "All Statuses",  
+        "plate_number":        "",               
     }
 if "reg_page" not in st.session_state:
     st.session_state.reg_page = 1
 
+def _status_to_backend(label: str) -> str:
+    return "ALL" if label == "All Statuses" else label
+
+#  DIALOGS  #
+
 @st.dialog("Filter Registrations")
 def filter_dialog():
-    st.write("Narrow results by registration status, vehicle category, or expiry date:")
+    st.write("Narrow results by registration status or plate number:")
     cur = st.session_state.reg_filters
-    statuses = st.multiselect("Registration Status", STATUS_OPTIONS, default=cur["statuses"])
-    cat_idx  = VEHICLE_CATEGORIES.index(cur["vehicle_category"]) if cur["vehicle_category"] in VEHICLE_CATEGORIES else 0
-    vehicle_category = st.selectbox("Vehicle Category", VEHICLE_CATEGORIES, index=cat_idx)
-    use_expiry = st.checkbox("Filter by expiration date (on or before)", value=cur["expired_as_of"] is not None)
-    expired_as_of = None
-    if use_expiry:
-        expired_as_of = st.date_input("Expired As Of", value=cur["expired_as_of"] or date.today())
+    stat_idx = STATUS_FILTER_OPTIONS.index(cur["registration_status"]) \
+               if cur["registration_status"] in STATUS_FILTER_OPTIONS else 0
+
+    registration_status = st.selectbox("Registration Status", STATUS_FILTER_OPTIONS, index=stat_idx)
+    plate_number        = st.text_input(
+        "Plate Number (exact match)", value=cur["plate_number"],
+        placeholder="Leave empty for all"
+    )
+
     if st.button("Apply Filters", use_container_width=True, type="primary"):
         st.session_state.reg_filters.update({
-            "statuses":        statuses,
-            "vehicle_category": vehicle_category,
-            "expired_as_of":   expired_as_of,
+            "registration_status": registration_status,
+            "plate_number":        plate_number.strip().upper(),
         })
         st.session_state.reg_page = 1
         st.rerun()
+
 
 @st.dialog("Add New Registration", width="large")
 def add_registration_dialog():
@@ -60,7 +65,7 @@ def add_registration_dialog():
             reg_date     = st.date_input("Registration Date *",   value=date.today())
         with col2:
             exp_date   = st.date_input("Expiration Date *", value=date.today())
-            reg_status = st.selectbox("Registration Status *", STATUS_OPTIONS)
+            reg_status = st.selectbox("Registration Status *", STATUS_OPTS)
         if st.form_submit_button("Add Registration", use_container_width=True, type="primary"):
             if not reg_number or not plate_number:
                 st.error("Registration number and plate number are required.")
@@ -68,7 +73,7 @@ def add_registration_dialog():
                 st.error("Expiration date must be after the registration date.")
             else:
                 try:
-                    rc.add_registration({
+                    rc.create_vehicle_registration({
                         "registration_number": reg_number.strip().upper(),
                         "plate_number":        plate_number.strip().upper(),
                         "registration_date":   reg_date,
@@ -79,6 +84,7 @@ def add_registration_dialog():
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding registration: {e}")
+
 
 @st.dialog("Confirm Deletion")
 def delete_registration_dialog(r):
@@ -94,30 +100,32 @@ def delete_registration_dialog(r):
         except Exception as e:
             st.error(f"Error deleting record: {e}")
 
+
 @st.dialog("Edit Registration", width="large")
 def edit_registration_dialog(r):
-    stat_idx = STATUS_OPTIONS.index(r["Status"]) if r["Status"] in STATUS_OPTIONS else 0
+    stat_idx = STATUS_OPTS.index(r["Status"]) if r.get("Status") in STATUS_OPTS else 0
     with st.form("edit_registration_form"):
         col1, col2 = st.columns(2)
         with col1:
             st.text_input("Registration No. (read-only)", value=r["Registration No."], disabled=True)
-            new_plate    = st.text_input("Plate Number", value=r["Plate Number"])
+            new_plate    = st.text_input("Plate Number", value=r.get("Plate Number", ""))
             new_reg_date = st.date_input(
                 "Registration Date",
-                value=r["Registration Date"] if isinstance(r["Registration Date"], date) else date.today()
+                value=r["Registration Date"] if isinstance(r.get("Registration Date"), date) else date.today()
             )
         with col2:
             new_exp_date = st.date_input(
                 "Expiration Date",
-                value=r["Expiration Date"] if isinstance(r["Expiration Date"], date) else date.today()
+                value=r["Expiration Date"] if isinstance(r.get("Expiration Date"), date) else date.today()
             )
-            new_status = st.selectbox("Status", STATUS_OPTIONS, index=stat_idx)
+            new_status = st.selectbox("Status", STATUS_OPTS, index=stat_idx)
         if st.form_submit_button("Save Changes", use_container_width=True):
             if new_exp_date <= new_reg_date:
                 st.error("Expiration date must be after the registration date.")
             else:
                 try:
-                    rc.update_registration(r["Registration No."], {
+                    rc.update_registration({
+                        "registration_number": r["Registration No."],
                         "registration_date":   new_reg_date,
                         "expiration_date":     new_exp_date,
                         "registration_status": new_status,
@@ -128,52 +136,53 @@ def edit_registration_dialog(r):
                 except Exception as e:
                     st.error(f"Error updating record: {e}")
 
+
+#  Top nav bar  #
 col_search, empty_space, col_filter, col_add = st.columns([4, 1.5, 1.5, 2])
-
 with col_search:
-    search_query = st.text_input("Search", placeholder="Search by registration number, plate, or owner...", label_visibility="collapsed")
-
+    search_query = st.text_input(
+        "Search", placeholder="Search by registration number or plate number...",
+        label_visibility="collapsed"
+    )
 with col_filter:
     if st.button("Filter", use_container_width=True):
         filter_dialog()
-
 with col_add:
     if st.button("Add Registration", use_container_width=True):
         add_registration_dialog()
 
+
+#  Fetch data  #
 f = st.session_state.reg_filters
 try:
-    registrations = rc.get_all_registrations(
-        statuses=f["statuses"] if f["statuses"] else None,
-        vehicle_category=f["vehicle_category"],
-        expired_as_of=f["expired_as_of"],
-    )
+    registrations = rc.get_registrations_by_criteria({
+        "registration_status": _status_to_backend(f["registration_status"]),
+        "plate_number":        f["plate_number"] or "ALL",
+    })
 except Exception as e:
     st.error(f"Error loading registrations: {e}")
     registrations = []
 
 action_bar = st.empty()
 
+#  Build dataframe  #
 if not registrations:
     st.info("No registrations found matching the current filters or search query.")
 else:
     df = pd.DataFrame(registrations)
 
     rename_map = {
-        "registration_number":"Registration No.",
-        "plate_number":"Plate Number",
-        "registration_date":"Registration Date",
-        "expiration_date":"Expiration Date",
-        "registration_status":"Status",
-        "make":"Make",
-        "model":"Model",
-        "vehicle_type":"Vehicle Type",
-        "owner_name":"Owner",
+        "registration_number": "Registration No.",
+        "plate_number":        "Plate Number",
+        "registration_date":   "Registration Date",
+        "expiration_date":     "Expiration Date",
+        "registration_status": "Status",
     }
     df.rename(columns=rename_map, inplace=True)
+
     display_cols = [
-        "Registration No.", "Owner", "Plate Number",
-        "Make", "Model", "Registration Date", "Expiration Date", "Status",
+        "Registration No.", "Plate Number",
+        "Registration Date", "Expiration Date", "Status",
     ]
     df = df[[c for c in display_cols if c in df.columns]]
 
@@ -181,8 +190,7 @@ else:
         sq = search_query.lower()
         mask = (
             df["Registration No."].str.lower().str.contains(sq, na=False) |
-            df["Plate Number"].str.lower().str.contains(sq, na=False) |
-            df["Owner"].str.lower().str.contains(sq, na=False)
+            df["Plate Number"].str.lower().str.contains(sq, na=False)
         )
         df = df[mask]
 

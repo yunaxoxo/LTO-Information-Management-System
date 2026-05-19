@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# registration controller for handling registration-related operations
-# essentially you put queries here 
-=======
 # Controller for driver-related operations
 # Validates all inputs before delegating to the service layer
 from models.driver_model import Driver
@@ -105,4 +101,3 @@ def get_drivers_by_criteria(filters: dict) -> list:
 def get_invalid_licenses() -> list:
     """REPORT 4: Retrieves all drivers with expired or suspended licenses."""
     return driver_service.fetch_invalid_licenses()
->>>>>>> main

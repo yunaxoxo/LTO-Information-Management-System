@@ -3,14 +3,20 @@ import math
 import pandas as pd
 import streamlit as st
 
-# loads the stylesheet
-def css_style(caller_file: str, style: str = "style.css") -> None:
+def css_style(current_file_path):
+    """
+    Bulletproof CSS loader. Dynamically finds the root src/ directory 
+    and points to css/style.css regardless of which page calls it.
+    """
+    # Gets the directory of the file calling this function, then navigates to root / src
+    src_dir = Path(__file__).resolve().parent.parent 
+    css_path = src_dir / "css" / "style.css"
+    
     try:
-        css_path = Path(caller_file).parent.parent / "css" / style
-        with open(css_path, "r") as f:
+        with open(css_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
-        st.error(f"Couldn't find CSS file at: {css_path}")
+        st.warning(f"Could not locate CSS at {css_path}. Check your directory structure.")
 
 # safe string conversion — replaces NaN/None with empty string 
 def safe_str(series: pd.Series) -> pd.Series:

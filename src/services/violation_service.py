@@ -43,11 +43,13 @@ def record_new_traffic_violation(violation):
 @st.cache_data(ttl=300)
 def fetch_traffic_violations_by_criteria(
     violation_type="ALL", violation_status="ALL",
-    license_number="ALL", plate_number="ALL"
+    license_number="ALL", plate_number="ALL",
+    location_like="", date_from=None, date_to=None,
 ):
     """
     Fetches traffic violations matching optional filter criteria.
-    Only practical filter columns are exposed.
+    Supports equality filters (type, status, license, plate),
+    a LIKE filter on location, and a date-range BETWEEN filter.
     """
     filters = {
         "violation_type": violation_type,
@@ -62,8 +64,24 @@ def fetch_traffic_violations_by_criteria(
         "plate_number": "plate_number",
     }
     where, params = build_dynamic_where(filters, column_map)
+    params = list(params)
+
+    if location_like and location_like.strip():
+        where += " AND location LIKE CONCAT('%', ?, '%')"
+        params.append(location_like.strip())
+
+    if date_from and date_to:
+        where += " AND violation_date BETWEEN ? AND ?"
+        params.extend([str(date_from), str(date_to)])
+    elif date_from:
+        where += " AND violation_date >= ?"
+        params.append(str(date_from))
+    elif date_to:
+        where += " AND violation_date <= ?"
+        params.append(str(date_to))
+
     query = f"SELECT * FROM traffic_violations {where}"
-    return execute_query(query, params)
+    return execute_query(query, tuple(params))
 
 
 @st.cache_data(ttl=300)
