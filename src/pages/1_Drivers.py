@@ -213,3 +213,44 @@ if drivers:
             df["Full Name"].str.contains(search_query, case = False) |
             df['License Number'].str.contains(search_query, case=False, na=False)
         ]
+
+#Set-up pagination
+if not drivers or df.empty: 
+    st.info("No drivers found. Please adjust your search or filters.")
+else: 
+    #Row per page selection ( CAN CHANGE IF YOU WANT )
+    ROWS_PER_PAGE = 10 
+
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = 1
+    
+    total_pages = math.ceil(len(df) / ROWS_PER_PAGE) if len(df) > 0 else 1
+
+    #Reset to first page if current page is invalid
+    if st.session_state.current_page > total_pages:
+        st.session_state.current_page = total_pages
+    if st.session_state.current_page < 1:
+        st.session_state.current_page = 1
+    
+    #Pagination slicing
+    start_idx = (st.session_state.current_page - 1) * ROWS_PER_PAGE
+    end_idx = start_idx + ROWS_PER_PAGE
+    paginated_df = df.iloc[start_idx:end_idx]
+
+    #Page Counter
+    pg_col1, pg_col2, pg_col3 = st.columns([1, 4, 1])
+    
+    #Previous button
+    with pg_col1:
+        if st.button("⬅️ Previous", disabled=(st.session_state.current_page == 1), use_container_width=True):
+            st.session_state.current_page -= 1
+            st.rerun()
+    
+    with pg_col2:
+        st.markdown(f"<div style='text-align: center; color: #64748b; padding-top: 8px;'>Page <b>{st.session_state.current_page}</b> of <b>{total_pages}</b> (Showing {len(paginated_df)} records)</div>", unsafe_allow_html=True)
+
+    #Next button    
+    with pg_col3:
+        if st.button("Next ➡️", disabled=(st.session_state.current_page == total_pages), use_container_width=True):
+            st.session_state.current_page += 1
+            st.rerun()
