@@ -33,11 +33,11 @@ A full-stack web application for the **Land Transportation Office (LTO)** built 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | [Streamlit](https://streamlit.io/) (Python) |
-| Backend | Python 3.10+ |
-| Database | [MariaDB](https://mariadb.org/) 10.6+ |
+| Layer     | Technology                                                 |
+| --------- | ---------------------------------------------------------- |
+| Frontend  | [Streamlit](https://streamlit.io/) (Python)                |
+| Backend   | Python 3.10+                                               |
+| Database  | [MariaDB](https://mariadb.org/) 10.6+                      |
 | DB Driver | [mariadb](https://pypi.org/project/mariadb/) (C connector) |
 
 ---
@@ -126,6 +126,7 @@ sudo mariadb < src/db/seed.sql
 ```
 
 This will:
+
 - Create the `lto_system` database
 - Create the `lto_admin` user with full privileges
 - Create all 4 tables (`drivers`, `vehicles`, `vehicle_registrations`, `traffic_violations`)
@@ -166,6 +167,7 @@ streamlit run main.py
 The app will open in your browser at **http://localhost:8501**.
 
 Use the sidebar to navigate between pages:
+
 - **Drivers** — Manage driver records and run Reports 1 & 4
 - **Vehicles** — Manage vehicles and run Reports 2 & 3
 - **Registrations** — Track vehicle registration status
@@ -177,15 +179,15 @@ To stop the server, press `Ctrl+C` in the terminal.
 
 ## Business Reports
 
-| # | Report | Description |
-|---|--------|-------------|
-| 1 | **Filtered Drivers** | View drivers filtered by license type, status, sex, and age range |
-| 2 | **Vehicles by Owner** | View all vehicles owned by a specific driver |
-| 3 | **Expired Registrations** | View vehicles with expired registrations as of a given date |
-| 4 | **Invalid Licenses** | View all drivers with expired or suspended licenses |
-| 5 | **Violations by Driver** | View violations for a driver within a date range |
-| 6 | **Violations by Type** | View violation counts grouped by type for a date range |
-| 7 | **Violations by Location** | View violations matching a city or region |
+| #   | Report                     | Description                                                       |
+| --- | -------------------------- | ----------------------------------------------------------------- |
+| 1   | **Filtered Drivers**       | View drivers filtered by license type, status, sex, and age range |
+| 2   | **Vehicles by Owner**      | View all vehicles owned by a specific driver                      |
+| 3   | **Expired Registrations**  | View vehicles with expired registrations as of a given date       |
+| 4   | **Invalid Licenses**       | View all drivers with expired or suspended licenses               |
+| 5   | **Violations by Driver**   | View violations for a driver within a date range                  |
+| 6   | **Violations by Type**     | View violation counts grouped by type for a date range            |
+| 7   | **Violations by Location** | View violations matching a city or region                         |
 
 ---
 
@@ -221,4 +223,6 @@ The application follows a **strict layered architecture** with separation of con
 
 ## Contributors
 
-- *Add your name(s) here*
+- _Frendzo Charles Pelagio_
+- _Cherrie Joyce De Guzman_
+- _Rein Matthew Malonzo_
