@@ -1,9 +1,11 @@
 from datetime import date
+import math
 from pathlib import Path
 import pandas as pd
 import streamlit as st
 from controllers import driver_controller as dc
 
+st.set_page_config(page_title="Driver Registry", layout = "wide")
 def css_style(style):
     try:
         current_dir = Path(__file__).parent
@@ -103,8 +105,8 @@ def add_driver_dialog():
                     st.error(f"Error adding driver: {e}")
 
 # Delete driver dialog
-@st.dialog("Confirm Deletion")
-def delete_driver_dialog(driver_data):
+@st.dialog("Confirm Deletion") 
+def delete_driver_dialog(d):
     st.warning(f"This will permanently delete **{d['full_name']}** and all linked records.")
     if st.button("Confirm Delete", type="primary"):
         try:
@@ -117,9 +119,9 @@ def delete_driver_dialog(driver_data):
 # Edit driver dialog
 @st.dialog("Edit Driver Data", width = "large")
 def edit_driver_dialog(d): #d = driver data
-    cur_type = d.get("license_type")
+    cur_type = d.get("License Type")
     type_idx = TYPE_OPTIONS.index(cur_type) if cur_type in TYPE_OPTIONS else 0
-    cur_stat = d.get("license_status", "Valid")
+    cur_stat = d.get("License Status", "Valid")
     stat_idx = STATUS_OPTIONS.index(cur_stat) if cur_stat in STATUS_OPTIONS else 0
 
     # Form for editing driver data
@@ -127,20 +129,20 @@ def edit_driver_dialog(d): #d = driver data
         c1, c2 = st.columns(2)
         
         with c1:
-            new_name = st.text_input("Full Name", value=d.get("full_name", ""))
-            new_bday = st.date_input("Date of Birth", value=d.get("birthday") or date.today())
-            new_sex = st.selectbox("Sex", ["M", "F"], index=0 if d.get("sex") == "M" else 1)
-            new_address = st.text_area("Address", value=d.get("address", ""))
+            new_name = st.text_input("Full Name", value=d.get("Full Name", ""))
+            new_bday = st.date_input("Date of Birth", value=d.get("Birthday") or date.today())
+            new_sex = st.selectbox("Sex", ["M", "F"], index=0 if d.get("Sex") == "M" else 1)
+            new_address = st.text_area("Address", value=d.get("Address", ""))
                 
         with c2:
             new_type = st.selectbox("License Type", TYPE_OPTIONS, index=type_idx)
             new_status = st.selectbox("Status", STATUS_OPTIONS, index=stat_idx)
-            new_issue = st.date_input("Issuance Date", value=d.get("license_issuance_date") or date.today())
-            new_exp = st.date_input("Expiration Date", value=d.get("license_expiration_date") or date.today())
+            new_issue = st.date_input("Issuance Date", value=d.get("Issuance Date") or date.today())
+            new_exp = st.date_input("Expiration Date", value=d.get("Expiration Date") or date.today())
             
         if st.form_submit_button("Save Changes", use_container_width=True):
             try:
-                dc.update_driver(d["license_number"], {
+                dc.update_driver(d["License Number"], {
                     "full_name": new_name,
                     "birthday": new_bday,
                     "sex": new_sex,
@@ -179,10 +181,10 @@ f = st.session_state.filters
 try: 
     drivers = dc.get_all_drivers( 
         license_type = f["license_type"],
-        license_status = f["status"],
-        age_range = f["age_range"],
-        sex = f["sex"],
-        search = search_query or None
+        statuses = f["status"],
+        age_min = f["age_range"][0],
+        age_max = f["age_range"][1],
+        sex = f["sex"]
     )
 except Exception as e:
     st.error(f"Error loading drivers: {e}")
@@ -268,12 +270,12 @@ else:
 
     try:
         styled_df = paginated_df.style.format({
-            ' Status': format_status, ' Type': format_type
-        }).map(color_status, subset=[' Status']).map(color_type, subset=[' Type'])
+            'License Status': format_status, 'License Type': format_type
+        }).map(color_status, subset=['License Status']).map(color_type, subset=['License Type'])
     except AttributeError:
         styled_df = paginated_df.style.format({
-            ' Status': format_status, ' Type': format_type
-        }).applymap(color_status, subset=[' Status']).applymap(color_type, subset=[' Type'])
+            'License Status': format_status, 'License Type': format_type
+        }).applymap(color_status, subset=['License Status']).applymap(color_type, subset=['License Type'])
 
     selection_event = st.dataframe(
         styled_df,
@@ -310,7 +312,7 @@ else:
             with st.container(border=True):
                 c_text, c_edit, c_del = st.columns([6, 1.5, 1.5])
                 with c_text:
-                    st.markdown(f"**Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
+                    st.markdown(f"**Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data['License Number']}`)")
                 with c_edit:
                     if st.button("Edit", use_container_width=True):
                         edit_driver_dialog(selected_driver_data.to_dict())
