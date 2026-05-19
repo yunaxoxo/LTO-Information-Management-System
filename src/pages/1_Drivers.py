@@ -115,42 +115,43 @@ def delete_driver_dialog(driver_data):
         except Exception as e:
             st.error(f"Error deleting record: {e}")
 
-     # EDIT
-    elif action == "Edit":
-        cur_type = d.get("license_type")
-        type_idx = TYPE_OPTIONS.index(cur_type) if cur_type in TYPE_OPTIONS else 0
-        
-        cur_stat = d.get("license_status", "Valid")
-        stat_idx = STATUS_OPTIONS.index(cur_stat) if cur_stat in STATUS_OPTIONS else 0
+@st.dialog("Edit Driver Data", width = "large")
+def edit_driver_dialog(d): #d = driver data
+    cur_type = d.get("license_type")
+    type_idx = TYPE_OPTIONS.index(cur_type) if cur_type in TYPE_OPTIONS else 0
+    cur_stat = d.get("license_status", "Valid")
+    stat_idx = STATUS_OPTIONS.index(cur_stat) if cur_stat in STATUS_OPTIONS else 0
 
-        # Form for editing driver data
-        with st.form("edit_driver_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                new_name = st.text_input("Full Name", value=d.get("full_name", ""))
-                new_bday = st.date_input("Date of Birth", value=d.get("birthday") or date.today())
-                new_sex = st.selectbox("Sex", ["M", "F"], index=0 if d.get("sex") == "M" else 1)
-                new_address = st.text_area("Address", value=d.get("address", ""))
-            with c2:
-                new_type = st.selectbox("License Type", TYPE_OPTIONS, index=type_idx)
-                new_status = st.selectbox("Status", STATUS_OPTIONS, index=stat_idx)
-                new_issue = st.date_input("Issuance Date", value=d.get("license_issuance_date") or date.today())
-                new_exp = st.date_input("Expiration Date", value=d.get("license_expiration_date") or date.today())
+    # Form for editing driver data
+    with st.form("edit_driver_form"):
+        c1, c2 = st.columns(2)
+        
+        with c1:
+            new_name = st.text_input("Full Name", value=d.get("full_name", ""))
+            new_bday = st.date_input("Date of Birth", value=d.get("birthday") or date.today())
+            new_sex = st.selectbox("Sex", ["M", "F"], index=0 if d.get("sex") == "M" else 1)
+            new_address = st.text_area("Address", value=d.get("address", ""))
+                
+        with c2:
+            new_type = st.selectbox("License Type", TYPE_OPTIONS, index=type_idx)
+            new_status = st.selectbox("Status", STATUS_OPTIONS, index=stat_idx)
+            new_issue = st.date_input("Issuance Date", value=d.get("license_issuance_date") or date.today())
+            new_exp = st.date_input("Expiration Date", value=d.get("license_expiration_date") or date.today())
             
-            if st.form_submit_button("Save Changes", use_container_width=True):
-                try:
-                    dc.update_driver(d["license_number"], {
-                        "full_name": new_name,
-                        "birthday": new_bday,
-                        "sex": new_sex,
-                        "address": new_address,
-                        "license_type": new_type,
-                        "license_status": new_status,
-                        "license_issuance_date": new_issue,
-                        "license_expiration_date": new_exp,
-                    })
-                    st.success("✅ Driver updated!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error updating record: {e}")
+        if st.form_submit_button("Save Changes", use_container_width=True):
+            try:
+                dc.update_driver(d["license_number"], {
+                    "full_name": new_name,
+                    "birthday": new_bday,
+                    "sex": new_sex,
+                    "address": new_address,
+                    "license_type": new_type,
+                    "license_status": new_status,
+                    "license_issuance_date": new_issue,
+                    "license_expiration_date": new_exp,
+                })
+                st.success("✅ Driver updated!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error updating record: {e}")
                 
