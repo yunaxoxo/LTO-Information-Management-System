@@ -43,7 +43,7 @@ def filter_dialog():
     status       = st.multiselect("License Status", STATUS_OPTIONS, default=cur["status"])
     age_range    = st.slider("Age Range", 16, 100, cur["age_range"])
     sex_filter   = st.radio("Sex", ["All", "Male", "Female"], horizontal=True,
-                            index=["All", "Male", "Female"].index(cur["sex"]))
+                             index=["All", "Male", "Female"].index(cur["sex"]))
     if st.button("Apply Filters", use_container_width=True, type="primary"):
         st.session_state.filters.update({
             "license_type": license_type,
