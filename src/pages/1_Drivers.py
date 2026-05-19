@@ -154,4 +154,21 @@ def edit_driver_dialog(d): #d = driver data
                 st.rerun()
             except Exception as e:
                 st.error(f"Error updating record: {e}")
+
+col_search, empty_space, col_filter, col_add = st.columns([4, 1.5, 1.5, 2])
+#empty_space essentially to move buttons to the right 
+
+# Search bar 
+with col_search:
+    search_query = st.text_input("Search", placeholder="Search Driver Records", label_visibility = "collapsed")
+
+# Filter button 
+with col_filter: 
+    if st.button("Filter", use_container_width = True):
+        filter_dialog()
+
+# Add Driver button 
+with col_add:
+    if st.button("Add Driver", use_container_width=True):
+        add_driver_dialog()
                 
