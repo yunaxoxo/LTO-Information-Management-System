@@ -1,32 +1,32 @@
-# Establish database connection here 
+import mysql.connector
 from mysql.connector import pooling
-import streamlit as  st
-
-#reference: https://dev.mysql.com/doc/connector-python/en/connector-python-connection-pooling.html 
-# Establish conenction pool to the database
-# Use later for executing queries in the controllers
+import streamlit as st
 
 DB_CONFIG = {
-    'host': 'localhost',
-    'port': 3306,
-    'user': 'root',
-    'password': 'root', #change this to your own password
-    'database': 'lto_system'
-} 
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "VladMel@28!",
+    "database": "lto_system",
+}
 
-#Create a connection pool 
 @st.cache_resource
 def get_connection_pool():
-    try: 
-        pool = pooling.MySQLConnectionPool(pool_name="lto_pool", pool_size=5, **DB_CONFIG)
+    try:
+        pool = pooling.MySQLConnectionPool(
+            pool_name="lto_pool",
+            pool_size=5,
+            **DB_CONFIG
+        )
         return pool
     except Exception as e:
-        st.error(f"Error creating connection pool: {e}")
+        st.error(f"Failed to connect to database: {e}")
         return None
 
 def get_connection():
     pool = get_connection_pool()
     if pool:
+<<<<<<< Updated upstream
        return pool.get_connection()
     else:
         return None
@@ -42,3 +42,43 @@ DB_CONFIG = {
     "database": st.secrets["DB_NAME"],
 }
 
+=======
+        return pool.get_connection()
+    return None
+
+def execute_query(query, params=None, fetch=True):
+    conn = get_connection()
+    if not conn:
+        return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, params or ())
+        if fetch:
+            result = cursor.fetchall()
+            return result
+        else:
+            conn.commit()
+            return cursor.lastrowid
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+
+def execute_many(query, params_list):
+    conn = get_connection()
+    if not conn:
+        return None
+    try:
+        cursor = conn.cursor()
+        cursor.executemany(query, params_list)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+#
+>>>>>>> Stashed changes
