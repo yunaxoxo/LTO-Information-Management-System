@@ -3,9 +3,7 @@ import math
 import pandas as pd
 import streamlit as st
 
-
-# ---------------------- CSS LOADER ---------------------- #
-# loads the stylesheet relative to the calling page file
+# loads the stylesheet
 def css_style(caller_file: str, style: str = "style.css") -> None:
     try:
         css_path = Path(caller_file).parent.parent / "css" / style
@@ -14,15 +12,9 @@ def css_style(caller_file: str, style: str = "style.css") -> None:
     except FileNotFoundError:
         st.error(f"Couldn't find CSS file at: {css_path}")
 
-# ---------------------- END OF CSS LOADER ---------------------- #
-
-
-# ---------------------- DATAFRAME UTILITIES ---------------------- #
-# safe string conversion — replaces NaN/None with empty string before concat
+# safe string conversion — replaces NaN/None with empty string 
 def safe_str(series: pd.Series) -> pd.Series:
     return series.fillna("").astype(str).str.strip()
-
-# ---------------------- END OF DATAFRAME UTILITIES ---------------------- #
 
 
 # ---------------------- PAGINATION ---------------------- #
@@ -30,7 +22,7 @@ def safe_str(series: pd.Series) -> pd.Series:
 def paginate_df(df: pd.DataFrame, page_key: str, rows_per_page: int = 10):
     total_pages = math.ceil(len(df) / rows_per_page) if len(df) > 0 else 1
 
-    # clamp page within valid range
+    # ensure that page stays within range
     if st.session_state.get(page_key, 1) > total_pages:
         st.session_state[page_key] = total_pages
     if st.session_state.get(page_key, 1) < 1:
@@ -72,30 +64,13 @@ def render_pagination_controls(page_key: str, total_pages: int, paginated_df: pd
 
 # ---------------------- END OF PAGINATION ---------------------- #
 
-
-# ---------------------- STYLER COMPATIBILITY WRAPPER ---------------------- #
-# handles .map vs .applymap depending on the installed pandas version
 def apply_styler(styler, fn, subset):
     try:
         return styler.map(fn, subset=subset)
     except AttributeError:
         return styler.applymap(fn, subset=subset)
 
-# ---------------------- END OF STYLER COMPATIBILITY WRAPPER ---------------------- #
 
-
-# ---------------------- PLATE NUMBER STYLE ---------------------- #
-# dark license-plate badge — white bold text on a near-black background
-def style_plate(val) -> str:
-    return (
-        "background-color: #1e293b; color: #f8fafc; font-weight: 700; "
-        "border-radius: 4px; padding: 4px 8px; letter-spacing: 0.05em;"
-    )
-
-# ---------------------- END OF PLATE NUMBER STYLE ---------------------- #
-
-
-# ---------------------- DRIVER LICENSE STATUS ---------------------- #
 # color and icon formatters for Valid / Expired / Suspended / Revoked
 def color_license_status(val: str) -> str:
     colors = {
@@ -116,10 +91,7 @@ def format_license_status(val: str) -> str:
     }
     return icons.get(val, val)
 
-# ---------------------- END OF DRIVER LICENSE STATUS ---------------------- #
 
-
-# ---------------------- DRIVER LICENSE TYPE ---------------------- #
 # color and text formatters for Student / Non-Professional / Professional
 def color_license_type(val: str) -> str:
     colors = {
@@ -138,10 +110,6 @@ def format_license_type(val: str) -> str:
     }
     return short.get(val, str(val).upper())
 
-# ---------------------- END OF DRIVER LICENSE TYPE ---------------------- #
-
-
-# ---------------------- REGISTRATION STATUS ---------------------- #
 # color and icon formatters for Active / Expired / Suspended
 def color_reg_status(val: str) -> str:
     colors = {
@@ -156,10 +124,6 @@ def format_reg_status(val: str) -> str:
     icons = {"Active": "🟢 Active", "Expired": "🔴 Expired", "Suspended": "🟠 Suspended"}
     return icons.get(val, val)
 
-# ---------------------- END OF REGISTRATION STATUS ---------------------- #
-
-
-# ---------------------- VIOLATION STATUS ---------------------- #
 # color and icon formatters for Paid / Unpaid / Contested
 def color_violation_status(val: str) -> str:
     colors = {
@@ -174,10 +138,6 @@ def format_violation_status(val: str) -> str:
     icons = {"Paid": "🟢 Paid", "Unpaid": "🔴 Unpaid", "Contested": "🟠 Contested"}
     return icons.get(val, val)
 
-# ---------------------- END OF VIOLATION STATUS ---------------------- #
-
-
-# ---------------------- VEHICLE TYPE ---------------------- #
 # color badges for the 11 supported vehicle categories
 def color_vehicle_type(val: str) -> str:
     palette = {
@@ -195,15 +155,9 @@ def color_vehicle_type(val: str) -> str:
     }
     return palette.get(val, "color: #374151; background-color: #f3f4f6;")
 
-# ---------------------- END OF VEHICLE TYPE ---------------------- #
-
-
-# ---------------------- FINE FORMATTER ---------------------- #
 # formats integer fine amounts as Philippine Peso with comma separators
 def format_fine(val) -> str:
     try:
         return f"₱{int(val):,}"
     except (ValueError, TypeError):
         return str(val)
-
-# ---------------------- END OF FINE FORMATTER ---------------------- #

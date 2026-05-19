@@ -4,7 +4,7 @@ import streamlit as st
 from controllers import violation_controller as vioc
 from utils.ui_helpers import (
     css_style, safe_str, paginate_df, render_pagination_controls,
-    apply_styler, style_plate,
+    apply_styler,
     color_violation_status, format_violation_status, format_fine,
 )
 

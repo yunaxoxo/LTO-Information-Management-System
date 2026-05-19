@@ -4,7 +4,7 @@ import streamlit as st
 from controllers import registration_controller as rc
 from utils.ui_helpers import (
     css_style, paginate_df, render_pagination_controls,
-    apply_styler, style_plate,
+    apply_styler,
     color_reg_status, format_reg_status,
 )
 

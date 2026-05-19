@@ -3,7 +3,7 @@ import streamlit as st
 from controllers import vehicle_controller as vc
 from utils.ui_helpers import (
     css_style, safe_str, paginate_df, render_pagination_controls,
-    apply_styler, style_plate, color_vehicle_type,
+    apply_styler, color_vehicle_type,
 )
 
 st.set_page_config(page_title="Vehicle Registry", layout="wide")
