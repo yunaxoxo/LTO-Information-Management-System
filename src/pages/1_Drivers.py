@@ -269,10 +269,49 @@ if selected_rows:
         with st.container(border=True):
             c_text, c_edit, c_del = st.columns([6, 1.5, 1.5])
             with c_text:
-                st.markdown(f"🛠️ **Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
+                st.markdown(f"**Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
             with c_edit:
                 if st.button("Edit", use_container_width=True):
                     edit_driver_dialog(selected_driver_data.to_dict())
             with c_del:
                 if st.button("Delete", type="primary", use_container_width=True):
                     delete_driver_dialog(selected_driver_data.to_dict())
+
+# pagination slicing style 
+    def format_status(val):
+        icons = {"Valid": "🟢 valid", "Expired": "🔴 expired", "Suspended": "🟠 suspended", "Revoked": "⚪ revoked"}
+        return icons.get(val, val)
+
+    def format_type(val):
+        short_types = {"Non-Professional": "NON-PROFESSIONAL", "Professional": "PROFESSIONAL", "Student": "STUDENT"}
+        return short_types.get(val, str(val).upper())
+
+    def color_status(val):
+        if val == 'Valid': return 'color: #15803d; background-color: #dcfce7;'
+        if val == 'Expired': return 'color: #b91c1c; background-color: #fee2e2;'
+        if val == 'Suspended': return 'color: #c2410c; background-color: #ffedd5;'
+        if val == 'Revoked': return 'color: #374151; background-color: #f3f4f6;'
+        return ''
+
+    def color_type(val):
+        if val == 'Student': return 'color: #7e22ce; background-color: #f3e8ff;'
+        if val == 'Professional': return 'color: #ffffff; background-color: #1e3a8a;'
+        if val == 'Non-Professional': return 'color: #0369a1; background-color: #e0f2fe;'
+        return ''
+
+    try:
+        styled_df = paginated_df.style.format({
+            ' Status': format_status, ' Type': format_type
+        }).map(color_status, subset=[' Status']).map(color_type, subset=[' Type'])
+    except AttributeError:
+        styled_df = paginated_df.style.format({
+            ' Status': format_status, ' Type': format_type
+        }).applymap(color_status, subset=[' Status']).applymap(color_type, subset=[' Type'])
+
+    selection_event = st.dataframe(
+        styled_df,
+        use_container_width=True, # This forces the table to stretch across the "wide" layout
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row"
+    )
