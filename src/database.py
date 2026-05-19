@@ -9,11 +9,9 @@ DB_CONFIG = {
     "database": st.secrets["DB_NAME"],
 }
 
-# Cache a SINGLE connection instead of a pool
 @st.cache_resource
 def get_connection():
     try:
-        # This opens one connection and keeps it open for the entire app session
         conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except Exception as e:
