@@ -60,46 +60,11 @@ def filter_dialog():
 
 #Pagisipan q pa if lagyan metrics 
 
-# Display driver data in a table
-# Tabs for driver list, add driver, edit/delete driver 
-
-# ---------------------------------------------------------------------------------
-# Will consider using buttons of add, edit, delete in the table itself for better UX 
-# ---------------------------------------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["Driver List", "Add Driver", "Edit/Delete Driver"])
-
-with tab1: 
-    if drivers:
-        # Convert to DataFrame 
-        df = pd.DataFrame(drivers)
-        rename_map = { 
-            "full_name": "Full Name",
-            "license_number": " Number",
-            "license_type": " Type",
-            "license_status": " Status",
-            "birthday": "Birthday",
-            "sex": "Sex",
-            "address": "Address",
-            "license_issuance_date": "Issuance",
-            "license_expiration_date": "Expiration",
-            "age": "Age",
-        }
-        # Rename columns for better display
-        df.rename(columns=rename_map, inplace=True)
-        cols = ["Full Name", " Number", " Type", " Status", "Birthday",
-                "Sex", "Address", "Issuance", "Expiration", "Age"]
-        cols = [col for col in cols if col in df.columns]
-        st.dataframe(df[cols], use_container_width=True)
-    else:
-        st.info("No drivers found with the selected filters.")
-
-# Add new driver
-with tab2: 
-    st.markdown("### Add New Driver")
-    st.caption("License format: XXX-XX-XXXXXX")
-
+#form for adding a new driver 
+@st.dialog("Add New Driver", width = "large")
+def add_driver_dialog():
     # Form for adding a new driver
-    with st.form("add_driver_form", clear_on_submit=True):
+    with st.form("add_driver_form"):
         col1, col2 = st.columns(2)
 
         with col1:
@@ -115,12 +80,9 @@ with tab2:
             issuance_date = st.date_input("Issuance Date *", value=date.today())
             expiration_date = st.date_input("Expiration Date *", value=date.today())
 
-        submitted = st.form_submit_button("Add Driver", use_container_width=True)
         # Validate required fields 
-        if submitted:
-            is_invalid = not license_number or not full_name or not address
-            
-            if is_invalid:
+        if st.form_submit_button("Add Driver", use_container_width=True, type="primary"):
+            if not license_number or not full_name or not address:
                 st.error("License number, full name, and address are required.")
             else:
                 try:
