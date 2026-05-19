@@ -90,11 +90,11 @@ def get_drivers_by_criteria(filters: dict) -> list:
     Accepts the frontend filter dict and maps keys to the service layer.
     """
     return driver_service.fetch_drivers_by_criteria(
-        license_types=filters.get("license_types"),         # list from multiselect
-        statuses=filters.get("status"),                     # list from multiselect
+        license_type=filters.get("license_type"),         # list from multiselect
+        license_status=filters.get("license_status"),                     # list from multiselect
         sex=filters.get("sex", "ALL"),
-        min_age=filters.get("age_min"),
-        max_age=filters.get("age_max"),
+        min_age=filters.get("min_age"),
+        max_age=filters.get("max_age"),
     )
 
 
