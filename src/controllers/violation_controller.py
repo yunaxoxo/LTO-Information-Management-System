@@ -103,6 +103,9 @@ def get_violations_by_criteria(filters: dict) -> list:
         violation_status=filters.get("violation_status", "ALL"),
         license_number=filters.get("license_number", "ALL"),
         plate_number=filters.get("plate_number", "ALL"),
+        location_like=filters.get("location_like", ""),
+        date_from=filters.get("date_from"),
+        date_to=filters.get("date_to"),
     )
 
 

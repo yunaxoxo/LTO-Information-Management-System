@@ -1,5 +1,5 @@
 .DS_Store
-.streamlit/*
+.streamlit/secrets.toml
 .vscode
-db/*
+__pycache__/
 .ruff*
