@@ -155,7 +155,7 @@ def color_vehicle_type(val: str) -> str:
     }
     return palette.get(val, "color: #374151; background-color: #f3f4f6;")
 
-# formats integer fine amounts as Philippine Peso with comma separators
+# formats integer fine amounts as Philippine Peso
 def format_fine(val) -> str:
     try:
         return f"₱{int(val):,}"
