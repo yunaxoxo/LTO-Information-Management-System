@@ -214,78 +214,44 @@ if drivers:
             df['License Number'].str.contains(search_query, case=False, na=False)
         ]
 
-#Set-up pagination
-if not drivers or df.empty: 
-    st.info("No drivers found. Please adjust your search or filters.")
-else: 
-    #Row per page selection ( CAN CHANGE IF YOU WANT )
-    ROWS_PER_PAGE = 10 
+#Contextual action bar 
+action_bar = st.empty()
 
+if not drivers or df.empty:
+    st.info("No drivers found matching the current filters or search query.")
+else:
+    #  Drivers per page ( CAN CHANGE IF YOU WANT)
+    ROWS_PER_PAGE = 10
+    
+    # Initialize current page
     if "current_page" not in st.session_state:
         st.session_state.current_page = 1
-    
+
+    # Calculate total pages based on filtered data
     total_pages = math.ceil(len(df) / ROWS_PER_PAGE) if len(df) > 0 else 1
 
-    #Reset to first page if current page is invalid
+    # if filtering reduces total pages, go back to first page
     if st.session_state.current_page > total_pages:
         st.session_state.current_page = total_pages
     if st.session_state.current_page < 1:
         st.session_state.current_page = 1
-    
-    #Pagination slicing
+
+    # Slicing 
     start_idx = (st.session_state.current_page - 1) * ROWS_PER_PAGE
     end_idx = start_idx + ROWS_PER_PAGE
     paginated_df = df.iloc[start_idx:end_idx]
 
-    #Page Counter
-    pg_col1, pg_col2, pg_col3 = st.columns([1, 4, 1])
-    
-    #Previous button
-    with pg_col1:
-        if st.button("⬅️ Previous", disabled=(st.session_state.current_page == 1), use_container_width=True):
-            st.session_state.current_page -= 1
-            st.rerun()
-    
-    with pg_col2:
-        st.markdown(f"<div style='text-align: center; color: #64748b; padding-top: 8px;'>Page <b>{st.session_state.current_page}</b> of <b>{total_pages}</b> (Showing {len(paginated_df)} records)</div>", unsafe_allow_html=True)
-
-    #Next button    
-    with pg_col3:
-        if st.button("Next ➡️", disabled=(st.session_state.current_page == total_pages), use_container_width=True):
-            st.session_state.current_page += 1
-            st.rerun()
-
-#Contextual Action Bar 
-action_bar_container = st.empty()
-
-#This feautre basically pops-up when a row is selected 
-#either you delete or edit a file 
-selected_rows = selection_event.selection.rows
-if selected_rows:
-    relative_index = selected_rows[0]
-    selected_driver_data = paginated_df.iloc[relative_index]
-
-    with action_bar_container.container():
-        with st.container(border=True):
-            c_text, c_edit, c_del = st.columns([6, 1.5, 1.5])
-            with c_text:
-                st.markdown(f"**Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
-            with c_edit:
-                if st.button("Edit", use_container_width=True):
-                    edit_driver_dialog(selected_driver_data.to_dict())
-            with c_del:
-                if st.button("Delete", type="primary", use_container_width=True):
-                    delete_driver_dialog(selected_driver_data.to_dict())
-
-# pagination slicing style 
+    # Styling to sliced data
+    # add icons to status column
     def format_status(val):
         icons = {"Valid": "🟢 valid", "Expired": "🔴 expired", "Suspended": "🟠 suspended", "Revoked": "⚪ revoked"}
         return icons.get(val, val)
-
+    
     def format_type(val):
         short_types = {"Non-Professional": "NON-PROFESSIONAL", "Professional": "PROFESSIONAL", "Student": "STUDENT"}
         return short_types.get(val, str(val).upper())
 
+    # license status text
     def color_status(val):
         if val == 'Valid': return 'color: #15803d; background-color: #dcfce7;'
         if val == 'Expired': return 'color: #b91c1c; background-color: #fee2e2;'
@@ -293,6 +259,7 @@ if selected_rows:
         if val == 'Revoked': return 'color: #374151; background-color: #f3f4f6;'
         return ''
 
+    # license type text
     def color_type(val):
         if val == 'Student': return 'color: #7e22ce; background-color: #f3e8ff;'
         if val == 'Professional': return 'color: #ffffff; background-color: #1e3a8a;'
@@ -310,8 +277,43 @@ if selected_rows:
 
     selection_event = st.dataframe(
         styled_df,
-        use_container_width=True, # This forces the table to stretch across the "wide" layout
+        use_container_width=True, 
         hide_index=True,
         on_select="rerun",
         selection_mode="single-row"
     )
+
+    # Pagination buttons
+    pg_col1, pg_col2, pg_col3 = st.columns([1, 4, 1])
+    
+    #previous button
+    with pg_col1:
+        if st.button("⬅️ Previous", disabled=(st.session_state.current_page == 1), use_container_width=True):
+            st.session_state.current_page -= 1
+            st.rerun()
+            
+    with pg_col2:
+        st.markdown(f"<div style='text-align: center; color: #64748b; padding-top: 8px;'>Page <b>{st.session_state.current_page}</b> of <b>{total_pages}</b> (Showing {len(paginated_df)} records)</div>", unsafe_allow_html=True)
+    
+    #next button
+    with pg_col3:
+        if st.button("Next ➡️", disabled=(st.session_state.current_page == total_pages), use_container_width=True):
+            st.session_state.current_page += 1
+            st.rerun()
+
+    selected_rows = selection_event.selection.rows
+    if selected_rows:
+        relative_index = selected_rows[0]
+        selected_driver_data = paginated_df.iloc[relative_index]
+
+        with action_bar.container():
+            with st.container(border=True):
+                c_text, c_edit, c_del = st.columns([6, 1.5, 1.5])
+                with c_text:
+                    st.markdown(f"**Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
+                with c_edit:
+                    if st.button("Edit", use_container_width=True):
+                        edit_driver_dialog(selected_driver_data.to_dict())
+                with c_del:
+                    if st.button("Delete", type="primary", use_container_width=True):
+                        delete_driver_dialog(selected_driver_data.to_dict()) 
