@@ -58,8 +58,7 @@ def filter_dialog():
         })
         st.rerun()
 
-#Pagisipan q pa if lagyan metrics 
-
+# ---------------------- CRUD OPERATIONS ---------------------- #
 #form for adding a new driver 
 @st.dialog("Add New Driver", width = "large")
 def add_driver_dialog():
@@ -103,7 +102,7 @@ def add_driver_dialog():
                 except Exception as e:
                     st.error(f"Error adding driver: {e}")
 
-# DELETE
+# Delete driver dialog
 @st.dialog("Confirm Deletion")
 def delete_driver_dialog(driver_data):
     st.warning(f"This will permanently delete **{d['full_name']}** and all linked records.")
@@ -115,6 +114,7 @@ def delete_driver_dialog(driver_data):
         except Exception as e:
             st.error(f"Error deleting record: {e}")
 
+# Edit driver dialog
 @st.dialog("Edit Driver Data", width = "large")
 def edit_driver_dialog(d): #d = driver data
     cur_type = d.get("license_type")
@@ -155,6 +155,8 @@ def edit_driver_dialog(d): #d = driver data
             except Exception as e:
                 st.error(f"Error updating record: {e}")
 
+# ---------------------- END OF CRUD OPERATIONS ---------------------- #
+
 col_search, empty_space, col_filter, col_add = st.columns([4, 1.5, 1.5, 2])
 #empty_space essentially to move buttons to the right 
 
@@ -171,4 +173,16 @@ with col_filter:
 with col_add:
     if st.button("Add Driver", use_container_width=True):
         add_driver_dialog()
-                
+
+f = st.session_state.filters
+try: 
+    drivers = dc.get_all_drivers( 
+        license_type = f["license_type"],
+        license_status = f["status"],
+        age_range = f["age_range"],
+        sex = f["sex"],
+        search = search_query or None
+    )
+except Exception as e:
+    st.error(f"Error loading drivers: {e}")
+    drivers = []
