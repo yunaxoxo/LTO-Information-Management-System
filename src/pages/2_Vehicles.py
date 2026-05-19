@@ -219,7 +219,6 @@ else:
         # styling to sliced data
         # add plate badge and vehicle type color badges
         styler = paginated_df.style
-        styler = apply_styler(styler, style_plate,        subset=["Plate Number"])
         styler = apply_styler(styler, color_vehicle_type, subset=["Vehicle Type"])
         styled_df = styler.set_properties(**{"text-align": "center", "white-space": "pre-wrap"})
 

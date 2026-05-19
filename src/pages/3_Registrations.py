@@ -193,7 +193,6 @@ else:
 
         styler = paginated_df.style.format({"Status": format_reg_status})
         styler = apply_styler(styler, color_reg_status, subset=["Status"])
-        styler = apply_styler(styler, style_plate,      subset=["Plate Number"])
         styled_df = styler.set_properties(**{"text-align": "center"})
 
         selection_event = st.dataframe(

@@ -244,7 +244,6 @@ else:
             "Fine (₱)": format_fine,
         })
         styler = apply_styler(styler, color_violation_status, subset=["Status"])
-        styler = apply_styler(styler, style_plate,            subset=["VEHICLE / PLATE"])
         styled_df = styler.set_properties(**{"text-align": "center", "white-space": "pre-wrap"})
 
         selection_event = st.dataframe(
