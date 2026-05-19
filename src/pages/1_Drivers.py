@@ -174,6 +174,7 @@ with col_add:
     if st.button("Add Driver", use_container_width=True):
         add_driver_dialog()
 
+#connect search and filter to driver
 f = st.session_state.filters
 try: 
     drivers = dc.get_all_drivers( 
@@ -186,3 +187,29 @@ try:
 except Exception as e:
     st.error(f"Error loading drivers: {e}")
     drivers = []
+
+# Format and display drivers in a table
+if drivers:
+    df = pd.DataFrame(drivers)
+    rename_map = {
+        "license_number" : "License Number",
+        "full_name" : "Full Name",
+        "birthday" : "Birthday",
+        "age" : "Age",
+        "sex" : "Sex",
+        "address" : "Address",
+        "license_type" : "License Type",
+        "license_status" : "License Status",
+        "license_issuance_date" : "Issuance Date",
+        "license_expiration_date" : "Expiration Date",
+    }
+    df.rename(columns = rename_map, inplace = True)
+    cols = ["License Number", "Full Name", "Sex", "Birthday", "Age", "License Type", "License Status", "Issuance Date", "Expiration Date", "Address"]
+    df = df[[c for c in cols if c in df.columns]]
+
+    # Search function
+    if search_query:    
+        df = df[
+            df["Full Name"].str.contains(search_query, case = False) |
+            df['License Number'].str.contains(search_query, case=False, na=False)
+        ]
