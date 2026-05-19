@@ -206,7 +206,7 @@ else:
     if df.empty:
         st.info("No vehicles found matching the current filters or search query.")
     else:
-        # column order: Plate Number, Owner, Vehicle Type, MAKE/MODEL, YEAR/COLOR, Engine Number, Chassis Number
+        # columns 
         display_cols = [
             "Plate Number", "Owner", "Vehicle Type",
             "MAKE / MODEL", "YEAR / COLOR", "Engine Number", "Chassis Number",
