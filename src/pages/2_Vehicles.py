@@ -251,3 +251,5 @@ else:
                     with c_del:
                         if st.button("Delete", type="primary", use_container_width=True, key="del_vehicle"):
                             delete_vehicle_dialog(full_row)
+#Vehicles Page Frontend 
+

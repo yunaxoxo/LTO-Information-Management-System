@@ -1,4 +1,9 @@
 .DS_Store
 .streamlit/*
 .vscode
+<<<<<<< HEAD
 __pycache__/
+=======
+db/*
+.ruff*
+>>>>>>> main

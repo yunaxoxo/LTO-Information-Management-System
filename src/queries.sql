@@ -6,8 +6,8 @@ WHERE
 AND (? = 'ALL' OR license_status = ?)
 AND (? = 'ALL' OR sex = ?)
 AND (
-    TIMESTAMPDIFF(YEAR, birthday, CURDATE())
-    BETWEEN ? AND ?
+    (TIMESTAMPDIFF(YEAR, birthday, CURDATE())
+    BETWEEN ? AND ?) OR ? = 'ALL'
 );
 
 -- REPORT 2 -> View all vehicles owned by a given driver.
