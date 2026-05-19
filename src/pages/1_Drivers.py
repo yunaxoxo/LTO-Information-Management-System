@@ -254,3 +254,25 @@ else:
         if st.button("Next ➡️", disabled=(st.session_state.current_page == total_pages), use_container_width=True):
             st.session_state.current_page += 1
             st.rerun()
+
+#Contextual Action Bar 
+action_bar_container = st.empty()
+
+#This feautre basically pops-up when a row is selected 
+#either you delete or edit a file 
+selected_rows = selection_event.selection.rows
+if selected_rows:
+    relative_index = selected_rows[0]
+    selected_driver_data = paginated_df.iloc[relative_index]
+
+    with action_bar_container.container():
+        with st.container(border=True):
+            c_text, c_edit, c_del = st.columns([6, 1.5, 1.5])
+            with c_text:
+                st.markdown(f"🛠️ **Active Record:** {selected_driver_data['Full Name']} (`{selected_driver_data[' Number']}`)")
+            with c_edit:
+                if st.button("Edit", use_container_width=True):
+                    edit_driver_dialog(selected_driver_data.to_dict())
+            with c_del:
+                if st.button("Delete", type="primary", use_container_width=True):
+                    delete_driver_dialog(selected_driver_data.to_dict())
