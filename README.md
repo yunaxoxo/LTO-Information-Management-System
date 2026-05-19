@@ -99,7 +99,7 @@ LTO-Information-Management-System/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/LTO-Information-Management-System.git
+git clone https://github.com/yunaxoxo/LTO-Information-Management-System.git
 cd LTO-Information-Management-System
 ```
 
