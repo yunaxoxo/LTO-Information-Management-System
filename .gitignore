@@ -1,8 +1,5 @@
 .DS_Store
-.streamlit/*
-!.streamlit/secrets.toml.example
-src/.streamlit/*
-!src/.streamlit/secrets.toml.example
+.streamlit/secrets.toml
 .vscode
 __pycache__/
 db/*

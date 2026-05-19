@@ -68,7 +68,7 @@ def create_driver(data: dict) -> str:
 
 
 def update_driver(data: dict) -> str:
-    """Validates input and updates an existing driver."""
+    """Validates input and updates an existing driver. Primary key must be in data."""
     driver = _build_driver(data)
     return driver_service.update_driver_info(driver)
 
@@ -87,14 +87,14 @@ def delete_driver(license_number: str) -> str:
 def get_drivers_by_criteria(filters: dict) -> list:
     """
     REPORT 1: Retrieves drivers matching the user-selected criteria.
-    Passes validated filter values to the service layer.
+    Accepts the frontend filter dict and maps keys to the service layer.
     """
     return driver_service.fetch_drivers_by_criteria(
-        license_type=filters.get("license_type", "ALL"),
-        license_status=filters.get("license_status", "ALL"),
+        license_types=filters.get("license_types"),         # list from multiselect
+        statuses=filters.get("status"),                     # list from multiselect
         sex=filters.get("sex", "ALL"),
-        min_age=filters.get("min_age"),
-        max_age=filters.get("max_age"),
+        min_age=filters.get("age_min"),
+        max_age=filters.get("age_max"),
     )
 
 
