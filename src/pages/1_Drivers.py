@@ -25,27 +25,38 @@ LICENSE_TYPES = ["All Types", "Student", "Non-Professional", "Professional"]
 TYPE_OPTIONS = [t for t in LICENSE_TYPES if t != "All Types"]
 STATUS_OPTIONS = ["Valid", "Expired","Suspended", "Revoked"]
 
-# Sidebar filters for drivers
-with st.sidebar: 
-    st.header("Filter Drivers")
-    license_type = st.selectbox("License Type", LICENSE_TYPES)
-    status = st.multiselect("License Status", STATUS_OPTIONS, default= ["Valid"])   
-    age_range = st.slider("Age Range", 16, 100, (16, 100))
-    sex_filter = st.radio ("Sex", ["All", "Male", "Female"], horizontal=True)
-    st.button("Apply Filters", use_container_width=True)
+# Initialize values of filter options
+if "filters" not in  st.session_state:
+    st.session_state.filters = {
+        "license_type": "All Types",
+        "status": ["Valid"],
+        "age_range": (16,100),
+        "sex": "All"
+    }
 
-# Fetch drivers based on filters
-try: 
-    drivers = dc.get_all_drivers(
-        license_type=license_type,
-        status=status,
-        age_min=age_range[0],
-        age_max=age_range[1],
-        sex=sex_filter
-    )
-except Exception as e:
-    st.error(f"Error fetching drivers: {e}")
-    drivers = []
+# Function to display filter dialog box 
+@st.dialog("Filter Drivers")
+def filter_dialog():
+    st.write("Please fill in the following fields to filter the drivers:")
+    
+    # Filter options (can be changed)
+    cur = st.session_state.filters 
+    
+    license_type = st.selectbox("License Type", LICENSE_TYPES, index=LICENSE_TYPES.index(cur["license_type"]))
+    status = st.multiselect("License Status", STATUS_OPTIONS, default= cur["status"])
+    age_range = st.slider("Age Range", 16, 100, cur["age_range"])
+    sex_filter = st.radio ("Sex", ["All", "Male", "Female"], horizontal=True, index= ["All", "Male", "Female"].index(cur["sex"]))
+    
+    # Update filter options and rerun app when button is clicked
+    # TEST LATER: width = 'stretch' or 'content'
+    if st.button("Apply Filters", use_container_width=True, type="primary"):
+        st.session_state.filters.update({
+            "license_type": license_type,
+            "status": status,
+            "age_range": age_range,
+            "sex": sex_filter,
+        })
+        st.rerun()
 
 #Pagisipan q pa if lagyan metrics 
 
