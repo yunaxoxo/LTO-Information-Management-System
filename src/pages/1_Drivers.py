@@ -204,7 +204,7 @@ else:
 
     # ── Calculate Age dynamically from birthday (never stored in DB) ──────── #
     if "birthday" in df.columns:
-        df["birthday"] = pd.to_datetime(df["birthday"], errors="coerce")
+        df["birthday"] = pd.to_datetime(df["birthday"], errors="coerce").dt.date
         today = pd.Timestamp.today().normalize()
         df["age"] = df["birthday"].apply(
             lambda b: (

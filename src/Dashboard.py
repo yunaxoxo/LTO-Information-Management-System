@@ -1,17 +1,12 @@
-import pandas as pd
 import streamlit as st
-
-from services import dashboard_service as dash_srv
+import pandas as pd
+import altair as alt
 from utils.ui_helpers import css_style
+from services import dashboard_service as dash_srv
 
-# ── Page Configuration ──────────────────────────────────────────────────── #
-st.set_page_config(
-    page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded")
 css_style(__file__)
 
-
-# ── Data Fetching (Cached for 60 seconds for performance) ───────────────── #
 @st.cache_data(ttl=60)
 def load_dashboard_data():
     return {
@@ -22,14 +17,11 @@ def load_dashboard_data():
         "expiring_licenses": dash_srv.get_expiring_licenses(),
         "resolved_vios": dash_srv.get_resolved_violations(),
         "avg_fine": dash_srv.get_average_fine(),
-        "trend_data": dash_srv.get_monthly_registration_trend(),
+        "trend_data": dash_srv.get_monthly_registration_trend()
     }
 
-
-# Fetch the live data
 data = load_dashboard_data()
 
-# ── TOP NAVIGATION ──────────────────────────────────────────────────────── #
 col_title, col_profile = st.columns([8, 1])
 with col_title:
     st.title("System Overview")
@@ -37,80 +29,97 @@ with col_title:
 
 st.markdown("---")
 
-# ── ROW 1: KPI METRICS ──────────────────────────────────────────────────── #
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
-    st.metric(
-        label="TOTAL REGISTERED DRIVERS",
-        value=f"{data['total_drivers']:,}",
-        delta="Live Data",
-    )
+    st.markdown(f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #1f77b4; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
+        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">👥 Vehicle Owners </p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['total_drivers']:,}</h2>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Registered Drivers</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 with m2:
-    st.metric(
-        label="ACTIVE REGISTRATIONS",
-        value=f"{data['active_regs']:,}",
-        delta="Stable",
-        delta_color="off",
-    )
+    st.markdown(f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #17becf; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
+        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">📝 Active Registrations</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['active_regs']:,}</h2>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Registered Vehicles</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 with m3:
-    st.metric(
-        label="TOTAL REVENUE (PHP)",
-        value=f"₱{data['revenue']:,.2f}",
-        delta="Collected Fines",
-        delta_color="off",
-    )
+    st.markdown(f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #ff7f0e; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
+        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">💰 Total Revenue</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">₱{data['revenue']:,.2f}</h2>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Collected Fines</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 with m4:
-    st.metric(
-        label="PENDING VIOLATIONS",
-        value=f"{data['pending_vios']:,}",
-        delta="Unpaid Tickets",
-        delta_color="inverse",
-    )
+    st.markdown(f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #d62728; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
+        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">⚠️ Pending Violations</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['pending_vios']:,}</h2>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #ff4b4b; font-weight: 600;">↑ Unpaid Tickets</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── ROW 2: CHART & STACKED CARDS ────────────────────────────────────────── #
 col_chart, col_cards = st.columns([2.5, 1])
 
 with col_chart:
     st.subheader("Monthly Registration Trend (Current Year)")
-
-    # Process chart data
+    
     trend_records = data["trend_data"]
     if not trend_records:
         st.info("No registration data available for the current year.")
     else:
-        # Convert DB dicts to a pandas DataFrame and set the month as the index
         df_trend = pd.DataFrame(trend_records)
-        df_trend.set_index("month", inplace=True)
-        # Rename column for a cleaner chart legend
         df_trend.rename(columns={"count": "Registrations"}, inplace=True)
-
-        st.line_chart(df_trend, use_container_width=True, height=420)
+        
+        month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        
+        chart = alt.Chart(df_trend).mark_bar().encode(
+            x=alt.X('month', sort=month_order, title="Month"),
+            y=alt.Y('Registrations', title="Registrations")
+        ).properties(height=420)
+        
+        st.altair_chart(chart, use_container_width=True)
 
 with col_cards:
     st.subheader("System Insights")
+    
+    # CARD 1: Expiring Licenses (Red Border)
+    html_card_1 = f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #ff4b4b; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Licenses Expiring Soon</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['expiring_licenses']:,}</h2>
+        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Within 30 days</p>
+    </div>
+    """
+    st.markdown(html_card_1, unsafe_allow_html=True)
+    
+    # CARD 2: Violations Resolved (Green Border)
+    html_card_2 = f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #2e8b57; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Violations Resolved</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['resolved_vios']:,}</h2>
+        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Paid/Settled</p>
+    </div>
+    """
+    st.markdown(html_card_2, unsafe_allow_html=True)
 
-    with st.container(border=True):
-        st.metric(
-            label="Licenses Expiring Soon",
-            value=f"{data['expiring_licenses']:,}",
-            delta="Within 30 days",
-            delta_color="inverse" if data["expiring_licenses"] > 0 else "off",
-        )
-
-    with st.container(border=True):
-        st.metric(
-            label="Violations Resolved",
-            value=f"{data['resolved_vios']:,}",
-            delta="Paid/Settled",
-        )
-
-    with st.container(border=True):
-        st.metric(
-            label="Average Fine Amount",
-            value=f"₱{data['avg_fine']:,.2f}",
-            delta="Per violation",
-            delta_color="off",
-        )
+    # CARD 3: Average Fine Amount (Blue Border)
+    html_card_3 = f"""
+    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #1f77b4; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Average Fine Amount</p>
+        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">₱{data['avg_fine']:,.2f}</h2>
+        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Per violation</p>
+    </div>
+    """
+    st.markdown(html_card_3, unsafe_allow_html=True)
