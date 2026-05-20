@@ -55,48 +55,6 @@ def render_sidebar():
         )
 
 
-def render_page_header(
-    title: str,
-    subtitle: str = "",
-    metrics: list = None,
-) -> None:
-    """
-    Renders the top section of a page.
-
-    Layout:
-        - metrics=None  → title (+ optional subtitle) spans the full width.
-        - metrics=[…]   → title in the left column; one st.metric() per
-                          remaining column.
-
-    Each metric dict supports:
-        label      (str)          – displayed above the value
-        value      (str | int)    – the primary number / text
-        delta      (str, optional)– annotation shown below; omit for no arrow
-        delta_color(str, optional)– "normal" | "inverse" | "off"
-    """
-    if metrics:
-        n = len(metrics)
-        # Give the title column weight proportional to the number of metrics
-        title_w = max(3, 7 - n)
-        cols = st.columns([title_w] + [2] * n)
-        with cols[0]:
-            st.title(title)
-            if subtitle:
-                st.caption(subtitle)
-        for idx, m in enumerate(metrics):
-            with cols[idx + 1]:
-                st.metric(
-                    label=m["label"],
-                    value=m["value"],
-                    delta=m.get("delta"),
-                    delta_color=m.get("delta_color", "off"),
-                )
-    else:
-        st.title(title)
-        if subtitle:
-            st.caption(subtitle)
-
-
 def metric_card(label: str, value: str, sub: str, color: str) -> str:
     """Returns an HTML metric card string matching the Dashboard style."""
     return f"""
