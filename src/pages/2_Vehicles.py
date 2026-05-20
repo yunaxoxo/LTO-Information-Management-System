@@ -30,7 +30,7 @@ m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.markdown(metric_card("🚗 Total Vehicles", f"{_vm['total']:,}", "In the registry", "#1f77b4"), unsafe_allow_html=True)
 with m2:
-    st.markdown(metric_card("🏆 Most Common Type", str(_vm['top_type']), "By fleet count", "#17becf"), unsafe_allow_html=True)
+    st.markdown(metric_card("🏆 Most Common Type", str(_vm['top_type']), "By count", "#17becf"), unsafe_allow_html=True)
 with m3:
     st.markdown(metric_card("✅ Active Registrations", f"{_vm['active_regs']:,}", "Currently valid", "#2e8b57"), unsafe_allow_html=True)
 with m4:
