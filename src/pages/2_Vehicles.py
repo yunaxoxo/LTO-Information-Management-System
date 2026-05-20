@@ -4,37 +4,68 @@ import streamlit as st
 from controllers import vehicle_controller as vc
 from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, render_sidebar, metric_card,
-    safe_str, paginate_df, render_pagination_controls,
-    apply_styler, color_vehicle_type,
-
+    apply_styler,
+    color_vehicle_type,
+    css_style,
+    metric_card,
+    paginate_df,
+    render_dataframe,
+    render_pagination_controls,
+    render_sidebar,
+    safe_str,
 )
 
 st.set_page_config(page_title="Vehicle Registry", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  
+_header = st.empty()
+
 
 # ── Metric cards ──
 @st.cache_data(ttl=60)
 def _vehicle_metrics():
     return {
-        "total":       dash_srv.get_total_vehicles_count(),
-        "top_type":    dash_srv.get_most_common_vehicle_type(),
+        "total": dash_srv.get_total_vehicles_count(),
+        "top_type": dash_srv.get_most_common_vehicle_type(),
         "active_regs": dash_srv.get_active_registrations(),
-        "exp_regs":    dash_srv.get_expired_registrations_count(),
+        "exp_regs": dash_srv.get_expired_registrations_count(),
     }
+
 
 _vm = _vehicle_metrics()
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.markdown(metric_card("🚗 Total Vehicles", f"{_vm['total']:,}", "In the registry", "#1f77b4"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Total Vehicles", f"{_vm['total']:,}", "In the registry", "#1f77b4"
+        ),
+        unsafe_allow_html=True,
+    )
 with m2:
-    st.markdown(metric_card("🏆 Most Common Type", str(_vm['top_type']), "By count", "#17becf"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card("Most Common Type", str(_vm["top_type"]), "By count", "#17becf"),
+        unsafe_allow_html=True,
+    )
 with m3:
-    st.markdown(metric_card("✅ Active Registrations", f"{_vm['active_regs']:,}", "Currently valid", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Active Registrations",
+            f"{_vm['active_regs']:,}",
+            "Currently valid",
+            "#2e8b57",
+        ),
+        unsafe_allow_html=True,
+    )
 with m4:
-    st.markdown(metric_card("🔴 Expired Registrations", f"{_vm['exp_regs']:,}", "Need renewal", "#d62728"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Expired Registrations",
+            f"{_vm['exp_regs']:,}",
+            "Need renewal",
+            "#d62728",
+        ),
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -140,9 +171,7 @@ def add_vehicle_dialog():
                             "license_number": license_number.strip().upper(),
                         }
                     )
-                    st.success(
-                        f"✅ Vehicle '{plate_number.upper()}' added successfully!"
-                    )
+                    st.success(f"Vehicle '{plate_number.upper()}' added successfully!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding vehicle: {e}")
@@ -212,7 +241,7 @@ def edit_vehicle_dialog(v):
                         "license_number": new_license.strip().upper(),
                     }
                 )
-                st.success("✅ Vehicle updated!")
+                st.success("Vehicle updated!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error updating record: {e}")
@@ -223,12 +252,15 @@ with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:
         st.title("Vehicle Registry")
-        st.caption("Manage and monitor all registered vehicles, including ownership, type, and technical details.")
+        st.caption(
+            "Manage and monitor all registered vehicles, including ownership, type, and technical details."
+        )
     with _hs:
         st.markdown("<br>", unsafe_allow_html=True)
         search_query = st.text_input(
-            "Search", placeholder="Search by plate, make, model, or type...",
-            label_visibility="collapsed"
+            "Search",
+            placeholder="Search by plate, make, model, or type...",
+            label_visibility="collapsed",
         )
     with _hf:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -242,6 +274,15 @@ with _header.container():
 
 #  Fetch data  #
 f = st.session_state.vehicle_filters
+_active_filters = []
+if f.get("vehicle_type", "All Types") != "All Types":
+    _active_filters.append(f"Type: {f['vehicle_type']}")
+
+if _active_filters:
+    st.markdown(
+        f'<div class="active-filter-caption">FILTERED BY: {" | ".join(_active_filters)}</div>',
+        unsafe_allow_html=True,
+    )
 try:
     vehicles = vc.get_vehicles_by_criteria(
         {
@@ -310,17 +351,14 @@ else:
 
         styler = paginated_df.style
         styler = apply_styler(styler, color_vehicle_type, subset=["Vehicle Type"])
+
+        # Injects alignment mechanics seamlessly ahead of execution
         styled_df = styler.set_properties(
             **{"text-align": "center", "white-space": "pre-wrap"}
         )
 
-        selection_event = st.dataframe(
-            styled_df,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row",
-        )
+        # Renders the styled matrix uniformly using your abstraction layout function
+        selection_event = render_dataframe(styled_df)
 
         render_pagination_controls("vehicle_page", total_pages, paginated_df)
 

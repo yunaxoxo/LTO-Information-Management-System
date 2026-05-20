@@ -6,17 +6,17 @@ import streamlit as st
 from controllers import driver_controller as dc
 from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, render_sidebar, metric_card,
-    paginate_df, render_pagination_controls,
-
     apply_styler,
     color_license_status,
     color_license_type,
     css_style,
     format_license_status,
     format_license_type,
+    metric_card,
     paginate_df,
+    render_dataframe,
     render_pagination_controls,
+    render_sidebar,
 )
 
 st.set_page_config(page_title="Driver Registry", layout="wide")
@@ -24,26 +24,51 @@ css_style(__file__)
 render_sidebar()
 _header = st.empty()  # filled after dialogs are defined (below)
 
+
 # ── Metric cards ──
 @st.cache_data(ttl=60)
 def _driver_metrics():
     return {
-        "total":     dash_srv.get_total_drivers_count(),
-        "valid":     dash_srv.get_valid_licenses_count(),
-        "expired":   dash_srv.get_expired_licenses_count(),
+        "total": dash_srv.get_total_drivers_count(),
+        "valid": dash_srv.get_valid_licenses_count(),
+        "expired": dash_srv.get_expired_licenses_count(),
         "suspended": dash_srv.get_suspended_licenses_count(),
     }
+
 
 _dm = _driver_metrics()
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.markdown(metric_card("👤 Total Drivers", f"{_dm['total']:,}", "Registered in system", "#1f77b4"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Total Drivers", f"{_dm['total']:,}", "Registered in system", "#1f77b4"
+        ),
+        unsafe_allow_html=True,
+    )
 with m2:
-    st.markdown(metric_card("✅ Valid Licenses", f"{_dm['valid']:,}", "Active & current", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Valid Licenses", f"{_dm['valid']:,}", "Active & current", "#2e8b57"
+        ),
+        unsafe_allow_html=True,
+    )
 with m3:
-    st.markdown(metric_card("🔴 Expired Licenses", f"{_dm['expired']:,}", "Needs renewal", "#d62728"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Expired Licenses", f"{_dm['expired']:,}", "Needs renewal", "#d62728"
+        ),
+        unsafe_allow_html=True,
+    )
 with m4:
-    st.markdown(metric_card("⚠️ Suspended / Revoked", f"{_dm['suspended']:,}", "Restricted licenses", "#ff7f0e"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Suspended / Revoked",
+            f"{_dm['suspended']:,}",
+            "Restricted licenses",
+            "#ff7f0e",
+        ),
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -177,7 +202,7 @@ def add_driver_dialog():
                             "license_expiration_date": expiration_date,
                         }
                     )
-                    st.success(f"✅ Driver '{full_name}' added successfully!")
+                    st.success(f"Driver '{full_name}' added successfully!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding driver: {e}")
@@ -258,7 +283,7 @@ def edit_driver_dialog(d):
                         "license_expiration_date": new_exp,
                     }
                 )
-                st.success("✅ Driver updated!")
+                st.success("Driver updated!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error updating record: {e}")
@@ -268,10 +293,14 @@ with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:
         st.title("Driver Registry")
-        st.caption("Manage and monitor driver information, licenses, violations, and other details.")
+        st.caption(
+            "Manage and monitor driver information, licenses, violations, and other details."
+        )
     with _hs:
         st.markdown("<br>", unsafe_allow_html=True)
-        search_query = st.text_input("Search", placeholder="Search Driver Records", label_visibility="collapsed")
+        search_query = st.text_input(
+            "Search", placeholder="Search Driver Records", label_visibility="collapsed"
+        )
     with _hf:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("Filter", use_container_width=True):
@@ -281,8 +310,23 @@ with _header.container():
         if st.button("Add Driver", use_container_width=True):
             add_driver_dialog()
 
-#  #
+# Fetch Data
 f = st.session_state.filters
+_active_filters = []
+if f.get("license_type", "All Types") != "All Types":
+    _active_filters.append(f"Type: {f['license_type']}")
+if f.get("license_status", "All Statuses") != "All Statuses":
+    _active_filters.append(f"Status: {f['license_status']}")
+if f.get("sex") != "ALL":
+    _active_filters.append(f"Sex: {f['sex']}")
+if f.get("min_age") != 16 or f.get("max_age") != 100:
+    _active_filters.append(f"Age: {f['min_age']}–{f['max_age']}")
+
+if _active_filters:
+    st.markdown(
+        f'<div class="active-filter-caption">FILTERED BY: {" | ".join(_active_filters)}</div>',
+        unsafe_allow_html=True,
+    )
 try:
     drivers = dc.get_drivers_by_criteria(
         {
@@ -368,15 +412,12 @@ else:
         )
         styler = apply_styler(styler, color_license_status, subset=["License Status"])
         styler = apply_styler(styler, color_license_type, subset=["License Type"])
-        styled_df = styler.set_properties(**{"text-align": "center"})
 
-        selection_event = st.dataframe(
-            styled_df,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row",
-        )
+        # Centering properties applied directly to style configuration
+        styler = styler.set_properties(**{"text-align": "center"})
+
+        # Renders the styled table globally using your custom ui_helper function
+        selection_event = render_dataframe(styler)
 
         render_pagination_controls("current_page", total_pages, paginated_df)
 

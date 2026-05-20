@@ -9,12 +9,13 @@ from utils.ui_helpers import (
     apply_styler,
     color_violation_status,
     css_style,
-    render_sidebar,
-    metric_card,
     format_fine,
     format_violation_status,
+    metric_card,
     paginate_df,
+    render_dataframe,
     render_pagination_controls,
+    render_sidebar,
 )
 
 st.set_page_config(page_title="Traffic Violations", layout="wide")
@@ -22,26 +23,40 @@ css_style(__file__)
 render_sidebar()
 _header = st.empty()  # filled after dialogs are defined (below)
 
+
 # ── Metric cards ──
 @st.cache_data(ttl=60)
 def _vio_metrics():
     return {
-        "total":     dash_srv.get_total_violations_count(),
-        "unpaid":    dash_srv.get_pending_violations(),
-        "resolved":  dash_srv.get_resolved_violations(),
+        "total": dash_srv.get_total_violations_count(),
+        "unpaid": dash_srv.get_pending_violations(),
+        "resolved": dash_srv.get_resolved_violations(),
         "contested": dash_srv.get_contested_violations_count(),
     }
+
 
 _vim = _vio_metrics()
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.markdown(metric_card("⚠️ Total Violations", f"{_vim['total']:,}", "All records", "#1f77b4"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card("Total Violations", f"{_vim['total']:,}", "All records", "#1f77b4"),
+        unsafe_allow_html=True,
+    )
 with m2:
-    st.markdown(metric_card("🔴 Unpaid", f"{_vim['unpaid']:,}", "Pending payment", "#d62728"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card("Unpaid", f"{_vim['unpaid']:,}", "Pending payment", "#d62728"),
+        unsafe_allow_html=True,
+    )
 with m3:
-    st.markdown(metric_card("✅ Resolved", f"{_vim['resolved']:,}", "Paid / Settled", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card("Resolved", f"{_vim['resolved']:,}", "Paid / Settled", "#2e8b57"),
+        unsafe_allow_html=True,
+    )
 with m4:
-    st.markdown(metric_card("🟠 Contested", f"{_vim['contested']:,}", "Under dispute", "#ff7f0e"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card("Contested", f"{_vim['contested']:,}", "Under dispute", "#ff7f0e"),
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
@@ -268,7 +283,7 @@ def add_violation_dialog():
                         }
                     )
                     st.success(
-                        f"✅ Violation '{top_number.upper()}' recorded successfully!"
+                        f"Violation '{top_number.upper()}' recorded successfully!"
                     )
                     st.rerun()
                 except Exception as e:
@@ -349,7 +364,7 @@ def edit_violation_dialog(v):
                         else None,
                     }
                 )
-                st.success("✅ Violation updated!")
+                st.success("Violation updated!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error updating record: {e}")
@@ -359,7 +374,9 @@ with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:
         st.title("Traffic Violations")
-        st.caption("Track and manage all recorded traffic infractions, fines, and enforcement actions.")
+        st.caption(
+            "Track and manage all recorded traffic infractions, fines, and enforcement actions."
+        )
     with _hs:
         st.markdown("<br>", unsafe_allow_html=True)
         search_query = st.text_input(
@@ -390,7 +407,10 @@ if f.get("date_mode", "Any Date") == "Single Year" and f.get("date_year"):
 elif f.get("date_mode") == "Date Range" and f.get("date_from") and f.get("date_to"):
     _active_filters.append(f"Date: {f['date_from']} → {f['date_to']}")
 if _active_filters:
-    st.caption("🔍 Active filters: " + " | ".join(_active_filters))
+    st.markdown(
+        f'<div class="active-filter-caption">FILTERED BY: {" | ".join(_active_filters)}</div>',
+        unsafe_allow_html=True,
+    )
 
 try:
     violations = vioc.get_violations_by_criteria(
@@ -473,13 +493,8 @@ else:
             **{"text-align": "center", "white-space": "pre-wrap"}
         )
 
-        selection_event = st.dataframe(
-            styled_df,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row",
-        )
+        # Uniformly rendering via the abstracted helper
+        selection_event = render_dataframe(styled_df)
 
         render_pagination_controls("vio_page", total_pages, paginated_display)
 
@@ -506,7 +521,7 @@ else:
                         ):
                             delete_violation_dialog(full_row)
 st.markdown("---")
-with st.expander("📊 Report 6 — Violations by Type for a Given Year", expanded=False):
+with st.expander("Report 6 — Violations by Type for a Given Year", expanded=False):
     st.markdown(
         "Counts all violations grouped by type for a selected calendar year. "
         "**Tip:** Use the **Filter** button above to narrow the main table by date range or city."
@@ -555,7 +570,7 @@ with st.expander("📊 Report 6 — Violations by Type for a Given Year", expand
             st.error(f"Error running Report 6: {e}")
 
 
-with st.expander("📍 Report 7 — Violations by City / Region", expanded=False):
+with st.expander("Report 7 — Violations by City / Region", expanded=False):
     st.markdown(
         "Finds all violations whose location contains the search term (partial match). "
         "**Tip:** Use the **Filter** button above to apply this filter directly to the main table."

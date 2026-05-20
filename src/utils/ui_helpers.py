@@ -1,17 +1,24 @@
-from pathlib import Path
 import math
+from pathlib import Path
+from typing import Any, Callable, Tuple
+
 import pandas as pd
 import streamlit as st
 
 
-def css_style(current_file_path):
+# ── CSS LOADER ────────────────────────────────────────────────────────
+def css_style(current_file_path: str) -> None:
     """
-    Bulletproof CSS loader. Dynamically finds the root src/ directory
-    and points to css/style.css regardless of which page calls it.
+    Bulletproof CSS loader. Points to css/style.css and handles font loads.
     """
-    # Gets the directory of the file calling this function, then navigates to root / src
-    src_dir = Path(__file__).resolve().parent.parent
-    css_path = src_dir / "css" / "style.css"
+    caller_path = Path(current_file_path).resolve()
+
+    if caller_path.parent.name == "pages":
+        root_dir = caller_path.parent.parent
+    else:
+        root_dir = caller_path.parent
+
+    css_path = root_dir / "css" / "style.css"
 
     try:
         with open(css_path) as f:
@@ -21,15 +28,16 @@ def css_style(current_file_path):
             f"Could not locate CSS at {css_path}. Check your directory structure."
         )
 
-def render_sidebar():
-    """Hides native nav, injects brand header at top, custom icon nav, and bottom utility buttons."""
-    # Globally hide the native Streamlit page navigation
+
+# ── SIDEBAR & NAVIGATION ──────────────────────────────────────────────
+def render_sidebar() -> None:
+    """Hides native nav, injects brand header, custom icon nav, and bottom utility buttons."""
     st.markdown(
         "<style>[data-testid='stSidebarNav']{display:none!important;}</style>",
         unsafe_allow_html=True,
     )
     with st.sidebar:
-        # ── Brand header ─────────────────────────────────────────────────────
+        # Brand header
         st.markdown(
             """
             <div class="sidebar-brand">
@@ -39,54 +47,67 @@ def render_sidebar():
             """,
             unsafe_allow_html=True,
         )
-        # ── Custom navigation with icons ──────────────────────────────────────
-        st.page_link("Dashboard.py",           label="📊  Dashboard")
-        st.page_link("pages/1_Drivers.py",     label="👤  Drivers")
-        st.page_link("pages/2_Vehicles.py",    label="🚗  Vehicles")
-        st.page_link("pages/3_Registrations.py", label="📋  Registrations")
-        st.page_link("pages/4_Violations.py",  label="⚠️  Violations")
-        # ── Bottom utility buttons ────────────────────────────────────────────
-        st.markdown(
-            """
-            <div class="sidebar-bottom">
-                <div class="sidebar-bottom-btn">⚙️&nbsp; Settings</div>
-                <div class="sidebar-bottom-btn">❓&nbsp; Support</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+
+        # Custom navigation using Streamlit's native material icon styling
+        st.page_link("Dashboard.py", label="Dashboard", icon=":material/dashboard:")
+        st.page_link("pages/1_Drivers.py", label="Drivers", icon=":material/badge:")
+        st.page_link(
+            "pages/2_Vehicles.py", label="Vehicles", icon=":material/directions_car:"
+        )
+        st.page_link(
+            "pages/3_Registrations.py",
+            label="Registrations",
+            icon=":material/assignment:",
+        )
+        st.page_link(
+            "pages/4_Violations.py", label="Violations", icon=":material/warning:"
         )
 
+        # ── REFACTORED BOTTOM UTILITIES ──────────────────────────────────
+        # Fixed text-doubling by wrapping native page links inside a structural footer container.
+        st.markdown('<div class="sidebar-bottom">', unsafe_allow_html=True)
+        st.page_link("Dashboard.py", label="Settings", icon=":material/settings:")
+        st.page_link("Dashboard.py", label="Support", icon=":material/help:")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-def metric_card(label: str, value: str, sub: str, color: str, sub_color: str = None) -> str:
-    """Returns an HTML metric card string matching the Dashboard style."""
+
+# ── DASHBOARD METRICS ─────────────────────────────────────────────────
+def metric_card(
+    label: str, value: str, sub: str, color: str, sub_color: str = None
+) -> str:
+    """Returns an HTML metric card string with auto-adjusting font-sizes to prevent wrapping truncation."""
     sub_style = f"color: {sub_color};" if sub_color else "opacity: 0.7;"
+
+    # Dynamically scales currency outputs down so they stay on a single line
+    font_size = "1.5rem" if "₱" in value and len(value) > 8 else "1.8rem"
+
     return f"""
-    <div style="padding:15px;border-radius:8px;border-top:5px solid {color};
+    <div style="padding:15px;border-radius:12px;border-top:5px solid {color};
                 background-color: var(--secondary-background-color);
                 color: var(--text-color);
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                border-left: 1px solid rgba(128,128,128,0.2);
-                border-right: 1px solid rgba(128,128,128,0.2);
-                border-bottom: 1px solid rgba(128,128,128,0.2);margin-bottom:0;">
-        <p style="margin:0;font-size:12px;font-weight:600;text-transform:uppercase;opacity:0.7;color:var(--text-color);">{label}</p>
-        <h2 style="margin:5px 0 0 0;font-size:2.0rem;color:var(--text-color);font-weight:700;">{value}</h2>
-        <p style="margin:5px 0 0 0;font-size:13px;font-weight:600;{sub_style}">{sub}</p>
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                border-left: 1px solid rgba(128,128,128,0.15);
+                border-right: 1px solid rgba(128,128,128,0.15);
+                border-bottom: 1px solid rgba(128,128,128,0.15);margin-bottom:0;">
+        <p style="margin:0;font-size:11px;font-weight:600;text-transform:uppercase;opacity:0.6;color:var(--text-color);letter-spacing:0.05em;">{label}</p>
+        <h2 style="margin:6px 0 0 0;font-size:{font_size};color:var(--text-color);font-weight:700;font-family:'JetBrains Mono', monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{value}</h2>
+        <p style="margin:4px 0 0 0;font-size:13px;font-weight:500;{sub_style}">{sub}</p>
     </div>
     """
 
 
-# safe string conversion — replaces NaN/None with empty string 
-
 def safe_str(series: pd.Series) -> pd.Series:
+    """Safe string conversion — replaces NaN/None with empty string."""
     return series.fillna("").astype(str).str.strip()
 
 
-# ---------------------- PAGINATION ---------------------- #
-# slices the dataframe for the current page and clamps the page index
-def paginate_df(df: pd.DataFrame, page_key: str, rows_per_page: int = 10):
+# ── NATIVE STREAMLIT PAGINATION ───────────────────────────────────────
+def paginate_df(
+    df: pd.DataFrame, page_key: str, rows_per_page: int = 10
+) -> Tuple[pd.DataFrame, int, int]:
+    """Slices the dataframe for the current page and clamps the page index safely."""
     total_pages = math.ceil(len(df) / rows_per_page) if len(df) > 0 else 1
 
-    # ensure that page stays within range
     if st.session_state.get(page_key, 1) > total_pages:
         st.session_state[page_key] = total_pages
     if st.session_state.get(page_key, 1) < 1:
@@ -99,17 +120,16 @@ def paginate_df(df: pd.DataFrame, page_key: str, rows_per_page: int = 10):
     return df.iloc[start_idx:end_idx], start_idx, total_pages
 
 
-# renders previous / page info / next buttons below the table
 def render_pagination_controls(
     page_key: str, total_pages: int, paginated_df: pd.DataFrame
 ) -> None:
+    """Renders sleek vector-based pagination controls beneath dataframes."""
     current_page = st.session_state.get(page_key, 1)
     pg_col1, pg_col2, pg_col3 = st.columns([1, 4, 1])
 
-    # previous button
     with pg_col1:
         if st.button(
-            "⬅️ Previous",
+            ":material/arrow_back: Previous",
             disabled=(current_page == 1),
             use_container_width=True,
             key=f"{page_key}_prev",
@@ -125,10 +145,9 @@ def render_pagination_controls(
             unsafe_allow_html=True,
         )
 
-    # next button
     with pg_col3:
         if st.button(
-            "Next ➡️",
+            "Next :material/arrow_forward:",
             disabled=(current_page == total_pages),
             use_container_width=True,
             key=f"{page_key}_next",
@@ -137,112 +156,130 @@ def render_pagination_controls(
             st.rerun()
 
 
-# ---------------------- END OF PAGINATION ---------------------- #
-
-
-def apply_styler(styler, fn, subset):
+# ── DATA FRAME STYLERS & FORMATTERS ───────────────────────────────────
+def apply_styler(styler: Any, fn: Callable[[Any], str], subset: Any) -> Any:
+    """Safely runs Styler mapping functions regardless of pandas version."""
     try:
         return styler.map(fn, subset=subset)
     except AttributeError:
         return styler.applymap(fn, subset=subset)
 
 
-# color and icon formatters for Valid / Expired / Suspended / Revoked
+# ── LICENSE STATUS HIGHLIGHTS ──
 def color_license_status(val: str) -> str:
+    # Rich status highlights with 15% opacity backgrounds and round tags
     colors = {
-        "Valid":     "color:#16a34a; background-color:rgba(22,163,74,0.15);  font-weight:600;",
-        "Expired":   "color:#dc2626; background-color:rgba(220,38,38,0.15);  font-weight:600;",
-        "Suspended": "color:#d97706; background-color:rgba(217,119,6,0.15);  font-weight:600;",
-        "Revoked":   "color:#6b7280; background-color:rgba(107,114,128,0.15);font-weight:600;",
+        "Valid": "color: #22c55e; background-color: rgba(34, 197, 94, 0.15); border-radius: 4px;",
+        "Expired": "color: #ef4444; background-color: rgba(239, 68, 68, 0.15); border-radius: 4px;",
+        "Suspended": "color: #f59e0b; background-color: rgba(245, 158, 11, 0.15); border-radius: 4px;",
+        "Revoked": "color: #9ca3af; background-color: rgba(156, 163, 175, 0.15); border-radius: 4px;",
     }
     return colors.get(val, "")
 
 
 def format_license_status(val: str) -> str:
-    icons = {
-        "Valid": "🟢 Valid",
-        "Expired": "🔴 Expired",
-        "Suspended": "🟠 Suspended",
-        "Revoked": "⚪ Revoked",
-    }
-    return icons.get(val, val)
+    return str(val).upper()
 
 
-# color and text formatters for Student / Non-Professional / Professional
+# ── LICENSE TYPE HIGHLIGHTS ──
 def color_license_type(val: str) -> str:
     colors = {
-        "Student":          "color:#9333ea; background-color:rgba(147,51,234,0.15); font-weight:700;",
-        "Professional":     "color:#2563eb; background-color:rgba(37,99,235,0.15);  font-weight:700;",
-        "Non-Professional": "color:#0284c7; background-color:rgba(2,132,199,0.15);  font-weight:700;",
+        "Student": "color: #c084fc; background-color: rgba(192, 132, 252, 0.15); border-radius: 4px;",
+        "Professional": "color: #60a5fa; background-color: rgba(96, 165, 250, 0.15); border-radius: 4px;",
+        "Non-Professional": "color: #38bdf8; background-color: rgba(56, 189, 248, 0.15); border-radius: 4px;",
     }
     return colors.get(val, "")
 
 
 def format_license_type(val: str) -> str:
     short = {
-        "Non-Professional": "NON-PROFESSIONAL",
+        "Non-Professional": "NON-PROF",
         "Professional": "PROFESSIONAL",
         "Student": "STUDENT",
     }
     return short.get(val, str(val).upper())
 
 
-# color and icon formatters for Active / Expired / Suspended
+# ── REGISTRATION STATUS HIGHLIGHTS ──
 def color_reg_status(val: str) -> str:
     colors = {
-        "Active":    "color:#16a34a; background-color:rgba(22,163,74,0.15); font-weight:600;",
-        "Expired":   "color:#dc2626; background-color:rgba(220,38,38,0.15); font-weight:600;",
-        "Suspended": "color:#d97706; background-color:rgba(217,119,6,0.15); font-weight:600;",
+        "Active": "color: #22c55e; background-color: rgba(34, 197, 94, 0.15); border-radius: 4px;",
+        "Expired": "color: #ef4444; background-color: rgba(239, 68, 68, 0.15); border-radius: 4px;",
+        "Suspended": "color: #f59e0b; background-color: rgba(245, 158, 11, 0.15); border-radius: 4px;",
     }
     return colors.get(val, "")
 
 
 def format_reg_status(val: str) -> str:
-    icons = {
-        "Active": "🟢 Active",
-        "Expired": "🔴 Expired",
-        "Suspended": "🟠 Suspended",
-    }
-    return icons.get(val, val)
+    return str(val).upper()
 
 
-# color and icon formatters for Paid / Unpaid / Contested
+# ── VIOLATION STATUS HIGHLIGHTS ──
 def color_violation_status(val: str) -> str:
     colors = {
-        "Paid":      "color:#16a34a; background-color:rgba(22,163,74,0.15); font-weight:600;",
-        "Unpaid":    "color:#dc2626; background-color:rgba(220,38,38,0.15); font-weight:600;",
-        "Contested": "color:#d97706; background-color:rgba(217,119,6,0.15); font-weight:600;",
+        "Paid": "color: #22c55e; background-color: rgba(34, 197, 94, 0.15); border-radius: 4px;",
+        "Unpaid": "color: #ef4444; background-color: rgba(239, 68, 68, 0.15); border-radius: 4px;",
+        "Contested": "color: #f59e0b; background-color: rgba(245, 158, 11, 0.15); border-radius: 4px;",
     }
     return colors.get(val, "")
 
 
 def format_violation_status(val: str) -> str:
-    icons = {"Paid": "🟢 Paid", "Unpaid": "🔴 Unpaid", "Contested": "🟠 Contested"}
-    return icons.get(val, val)
+    return str(val).upper()
 
 
-# color badges for the 11 supported vehicle categories
+# ── VEHICLE TYPE HIGHLIGHTS ──
 def color_vehicle_type(val: str) -> str:
     palette = {
-        "Sedan":            "color:#2563eb; background-color:rgba(37,99,235,0.15);",
-        "SUV":              "color:#16a34a; background-color:rgba(22,163,74,0.15);",
-        "Hatchback":        "color:#9333ea; background-color:rgba(147,51,234,0.15);",
-        "MPV":              "color:#ca8a04; background-color:rgba(202,138,4,0.15);",
-        "Pickup":           "color:#ca8a04; background-color:rgba(202,138,4,0.15);",
-        "Van":              "color:#4b5563; background-color:rgba(75,85,99,0.15);",
-        "Coupe":            "color:#e11d48; background-color:rgba(225,29,72,0.15);",
-        "Convertible":      "color:#db2777; background-color:rgba(219,39,119,0.15);",
-        "Commercial Truck": "color:#0891b2; background-color:rgba(8,145,178,0.15);",
-        "Bus":              "color:#059669; background-color:rgba(5,150,105,0.15);",
-        "Light Truck":      "color:#65a30d; background-color:rgba(101,163,13,0.15);",
-
+        "Sedan": "color: #60a5fa; background-color: rgba(96, 165, 250, 0.12);",
+        "SUV": "color: #4ade80; background-color: rgba(74, 222, 128, 0.12);",
+        "Hatchback": "color: #c084fc; background-color: rgba(192, 132, 252, 0.12);",
+        "MPV": "color: #facc15; background-color: rgba(250, 204, 21, 0.12);",
+        "Pickup": "color: #fb923c; background-color: rgba(251, 146, 60, 0.12);",
+        "Van": "color: #9ca3af; background-color: rgba(156, 163, 175, 0.12);",
+        "Coupe": "color: #f43f5e; background-color: rgba(244, 63, 94, 0.12);",
+        "Convertible": "color: #f472b6; background-color: rgba(244, 114, 182, 0.12);",
+        "Commercial Truck": "color: #22d3ee; background-color: rgba(34, 211, 238, 0.12);",
+        "Bus": "color: #2dd4bf; background-color: rgba(45, 212, 191, 0.12);",
+        "Light Truck": "color: #a3e635; background-color: rgba(163, 230, 53, 0.12);",
     }
-    return palette.get(val, "color:#4b5563; background-color:rgba(75,85,99,0.15);")
+    return (
+        palette.get(val, "color: #9ca3af; background-color: rgba(156, 163, 175, 0.12);")
+        + " border-radius: 4px;"
+    )
 
 
-# formats integer fine amounts as Philippine Peso
-def format_fine(val) -> str:
+def format_fine(val: Any) -> str:
     try:
         return f"₱{int(val):,}"
     except (ValueError, TypeError):
         return str(val)
+
+
+def render_dataframe(
+    styler: Any, selection_mode: str = "single-row", on_select: str = "rerun"
+) -> Any:
+    """
+    Universally styles any pandas Styler or DataFrame with bold JetBrains Mono,
+    and returns a native Streamlit dataframe object.
+    """
+    # If a raw DataFrame is passed, convert it to a Styler first
+    if hasattr(styler, "to_frame"):
+        styler = styler.style
+
+    # Bypasses Canvas protection by injecting font declarations inline
+    styled_df = styler.set_properties(
+        **{
+            "font-family": "JetBrains Mono, monospace",
+            "font-weight": "500",
+            "font-size": "13px",
+        }
+    )
+
+    return st.dataframe(
+        styled_df,
+        use_container_width=True,
+        hide_index=True,
+        on_select=on_select,
+        selection_mode=selection_mode,
+    )

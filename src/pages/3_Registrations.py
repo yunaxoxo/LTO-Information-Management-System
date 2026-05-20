@@ -1,42 +1,72 @@
 from datetime import date, timedelta
+
 import pandas as pd
 import streamlit as st
+
 from controllers import registration_controller as rc
 from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, render_sidebar, metric_card,
-    paginate_df, render_pagination_controls,
-
     apply_styler,
     color_reg_status,
+    css_style,
     format_reg_status,
+    metric_card,
+    paginate_df,
+    render_dataframe,
+    render_pagination_controls,
+    render_sidebar,
 )
 
 st.set_page_config(page_title="Vehicle Registrations", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty() 
+_header = st.empty()
+
 
 # ── Metric cards ──
 @st.cache_data(ttl=60)
 def _reg_metrics():
     return {
-        "total":    dash_srv.get_total_registrations_count(),
-        "active":   dash_srv.get_active_registrations(),
-        "expired":  dash_srv.get_expired_registrations_count(),
+        "total": dash_srv.get_total_registrations_count(),
+        "active": dash_srv.get_active_registrations(),
+        "expired": dash_srv.get_expired_registrations_count(),
         "expiring": dash_srv.get_expiring_registrations_count(),
     }
+
 
 _rm = _reg_metrics()
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.markdown(metric_card("📋 Total Registrations", f"{_rm['total']:,}", "All records", "#1f77b4"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Total Registrations", f"{_rm['total']:,}", "All records", "#1f77b4"
+        ),
+        unsafe_allow_html=True,
+    )
 with m2:
-    st.markdown(metric_card("✅ Active", f"{_rm['active']:,}", "Currently valid", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Active",
+            f"{_rm['active']:,}",
+            "Currently valid",
+            "#2e8b57",
+        ),
+        unsafe_allow_html=True,
+    )
 with m3:
-    st.markdown(metric_card("🔴 Expired", f"{_rm['expired']:,}", "Past expiration date", "#d62728"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Expired", f"{_rm['expired']:,}", "Past expiration date", "#d62728"
+        ),
+        unsafe_allow_html=True,
+    )
 with m4:
-    st.markdown(metric_card("⏰ Expiring Soon", f"{_rm['expiring']:,}", "Within 30 days", "#ff7f0e"), unsafe_allow_html=True)
+    st.markdown(
+        metric_card(
+            "Expiring Soon", f"{_rm['expiring']:,}", "Within 30 days", "#ff7f0e"
+        ),
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
@@ -128,7 +158,7 @@ def add_registration_dialog():
                         }
                     )
                     st.success(
-                        f"✅ Registration '{reg_number.upper()}' added successfully!"
+                        f"Registration '{reg_number.upper()}' added successfully!"
                     )
                     st.rerun()
                 except Exception as e:
@@ -195,21 +225,25 @@ def edit_registration_dialog(r):
                             "plate_number": new_plate.strip().upper(),
                         }
                     )
-                    st.success("✅ Registration updated!")
+                    st.success("Registration updated!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error updating record: {e}")
+
 
 with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:
         st.title("Vehicle Registrations")
-        st.caption("Manage and track vehicle registration records, validity periods, and registration status.")
+        st.caption(
+            "Manage and track vehicle registration records, validity periods, and registration status."
+        )
     with _hs:
         st.markdown("<br>", unsafe_allow_html=True)
         search_query = st.text_input(
-            "Search", placeholder="Search by registration number or plate number...",
-            label_visibility="collapsed"
+            "Search",
+            placeholder="Search by registration number or plate number...",
+            label_visibility="collapsed",
         )
     with _hf:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -223,6 +257,17 @@ with _header.container():
 
 #  Fetch data  #
 f = st.session_state.reg_filters
+_active_filters = []
+if f.get("registration_status", "All Statuses") != "All Statuses":
+    _active_filters.append(f"Status: {f['registration_status']}")
+if f.get("plate_number"):
+    _active_filters.append(f"Plate: {f['plate_number']}")
+
+if _active_filters:
+    st.markdown(
+        f'<div class="active-filter-caption">FILTERED BY: {" | ".join(_active_filters)}</div>',
+        unsafe_allow_html=True,
+    )
 try:
     registrations = rc.get_registrations_by_criteria(
         {
@@ -276,15 +321,12 @@ else:
 
         styler = paginated_df.style.format({"Status": format_reg_status})
         styler = apply_styler(styler, color_reg_status, subset=["Status"])
+
+        # Centralizing formatting before rendering
         styled_df = styler.set_properties(**{"text-align": "center"})
 
-        selection_event = st.dataframe(
-            styled_df,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row",
-        )
+        # Renders the styled table globally using your custom helper
+        selection_event = render_dataframe(styled_df)
 
         render_pagination_controls("reg_page", total_pages, paginated_df)
 
