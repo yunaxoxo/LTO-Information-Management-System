@@ -223,5 +223,5 @@ The application follows a **strict layered architecture** with separation of con
 ## Contributors
 
 - _Frendzo Charles Pelagio_
-- _Cherrie Joyce De Guzman_
+- _Cherrie Joyce Nieto_
 - _Rein Matthew Malonzo_
