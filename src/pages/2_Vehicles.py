@@ -13,7 +13,7 @@ from utils.ui_helpers import (
 st.set_page_config(page_title="Vehicle Registry", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  # filled after dialogs are defined (below)
+_header = st.empty()  
 
 # ── Metric cards ──
 @st.cache_data(ttl=60)

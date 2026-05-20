@@ -15,7 +15,7 @@ from utils.ui_helpers import (
 st.set_page_config(page_title="Vehicle Registrations", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  # filled after dialogs are defined (below)
+_header = st.empty() 
 
 # ── Metric cards ──
 @st.cache_data(ttl=60)
@@ -200,7 +200,6 @@ def edit_registration_dialog(r):
                 except Exception as e:
                     st.error(f"Error updating record: {e}")
 
-# ── Header row: title + action buttons (fills _header placeholder at top) ──
 with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:

@@ -137,7 +137,8 @@ h2 {
     opacity: 0.7;
 }
 
-.stButton > button { 
+/* Primary Button (Standard st.button with type="primary") */
+.stButton > button[kind="primary"], .stButton > button:not([kind="secondary"]) { 
     background: #1e3a5f !important; 
     color: white !important; 
     border: none !important; 
@@ -148,16 +149,52 @@ h2 {
     transition: all 0.2s !important; 
 }
 
-.stButton > button:hover { 
+.stButton > button[kind="primary"]:hover, .stButton > button:not([kind="secondary"]):hover { 
     background: #2d5a9e !important; 
     transform: translateY(-1px) !important; 
     box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3) !important; 
 }
 
+/* Secondary Button (Default st.button) */
 .stButton > button[kind="secondary"] { 
     background: transparent !important; 
     color: #1e3a5f !important; 
     border: 1.5px solid #1e3a5f !important; 
+    border-radius: 8px !important; 
+    font-weight: 600 !important; 
+    font-size: 0.875rem !important; 
+    padding: 0.5rem 1.2rem !important; 
+    transition: all 0.2s !important; 
+}
+
+.stButton > button[kind="secondary"]:hover { 
+    background: rgba(30, 58, 95, 0.08) !important; 
+    border-color: #2d5a9e !important; 
+    color: #2d5a9e !important; 
+    transform: translateY(-1px) !important; 
+}
+
+/* Dark mode overrides for secondary button */
+@media (prefers-color-scheme: dark) {
+    .stButton > button[kind="secondary"] { 
+        color: #ffffff !important; 
+        border-color: rgba(255, 255, 255, 0.4) !important; 
+    }
+    .stButton > button[kind="secondary"]:hover { 
+        background: rgba(255, 255, 255, 0.08) !important; 
+        border-color: #ffffff !important; 
+        color: #ffffff !important; 
+    }
+}
+
+/* Disabled button state */
+.stButton > button:disabled, .stButton > button[disabled] {
+    background: rgba(128, 128, 128, 0.08) !important;
+    color: rgba(128, 128, 128, 0.45) !important;
+    border: 1px solid rgba(128, 128, 128, 0.15) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 [data-testid="stDataFrame"] { 

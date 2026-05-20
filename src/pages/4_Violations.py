@@ -355,7 +355,6 @@ def edit_violation_dialog(v):
                 st.error(f"Error updating record: {e}")
 
 
-# ── Header row: title + action buttons (fills _header placeholder at top) ──
 with _header.container():
     _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
     with _ht:
