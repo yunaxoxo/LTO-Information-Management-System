@@ -9,6 +9,7 @@ from db.query_helpers import build_dynamic_where
 # CREATE
 # ============================================================
 
+
 def record_new_traffic_violation(violation):
     """
     Inserts a new traffic violation record.
@@ -40,11 +41,16 @@ def record_new_traffic_violation(violation):
 # READ
 # ============================================================
 
+
 @st.cache_data(ttl=300)
 def fetch_traffic_violations_by_criteria(
-    violation_type="ALL", violation_status="ALL",
-    license_number="ALL", plate_number="ALL",
-    location_like="", date_from=None, date_to=None,
+    violation_type="ALL",
+    violation_status="ALL",
+    license_number="ALL",
+    plate_number="ALL",
+    location_like="",
+    date_from=None,
+    date_to=None,
 ):
     """
     Fetches traffic violations matching optional filter criteria.
@@ -127,6 +133,7 @@ def fetch_violations_by_location(location):
 # UPDATE
 # ============================================================
 
+
 def update_traffic_violation(violation):
     """Updates an existing traffic violation identified by top_number."""
     query = """
@@ -156,6 +163,7 @@ def update_traffic_violation(violation):
 # ============================================================
 # DELETE
 # ============================================================
+
 
 def delete_traffic_violation(top_number):
     """Deletes a traffic violation by top_number."""

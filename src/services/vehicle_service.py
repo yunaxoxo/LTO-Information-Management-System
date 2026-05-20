@@ -9,6 +9,7 @@ from db.query_helpers import build_dynamic_where
 # CREATE
 # ============================================================
 
+
 def register_new_vehicle(vehicle):
     """Inserts a new vehicle record into the database."""
     query = """
@@ -36,10 +37,15 @@ def register_new_vehicle(vehicle):
 # READ
 # ============================================================
 
+
 @st.cache_data(ttl=300)
 def fetch_vehicles_by_criteria(
-    make="ALL", model="ALL", year="ALL", color="ALL",
-    vehicle_type="ALL", license_number="ALL"
+    make="ALL",
+    model="ALL",
+    year="ALL",
+    color="ALL",
+    vehicle_type="ALL",
+    license_number="ALL",
 ):
     """
     Fetches vehicles matching optional filter criteria.
@@ -96,6 +102,7 @@ def fetch_expired_registrations(as_of_date):
 # UPDATE
 # ============================================================
 
+
 def update_vehicle_info(vehicle):
     """Updates an existing vehicle record identified by plate_number."""
     query = """
@@ -124,6 +131,7 @@ def update_vehicle_info(vehicle):
 # ============================================================
 # DELETE
 # ============================================================
+
 
 def delete_vehicle(plate_number):
     """Deletes a vehicle record by plate_number."""

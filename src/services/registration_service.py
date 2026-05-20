@@ -9,6 +9,7 @@ from db.query_helpers import build_dynamic_where
 # CREATE
 # ============================================================
 
+
 def register_new_vehicle_registration(registration):
     """Inserts a new vehicle registration record."""
     query = """
@@ -31,6 +32,7 @@ def register_new_vehicle_registration(registration):
 # ============================================================
 # READ
 # ============================================================
+
 
 @st.cache_data(ttl=300)
 def fetch_vehicle_registrations_by_criteria(
@@ -57,6 +59,7 @@ def fetch_vehicle_registrations_by_criteria(
 # UPDATE
 # ============================================================
 
+
 def update_vehicle_registration(registration):
     """Updates an existing vehicle registration identified by registration_number."""
     query = """
@@ -74,13 +77,16 @@ def update_vehicle_registration(registration):
     rows = execute_query(query, params, fetch=False)
     st.cache_data.clear()
     if rows == 0:
-        return f"No registration found with number '{registration.registration_number}'."
+        return (
+            f"No registration found with number '{registration.registration_number}'."
+        )
     return "Vehicle registration updated successfully."
 
 
 # ============================================================
 # DELETE
 # ============================================================
+
 
 def delete_vehicle_registration(registration_number):
     """Deletes a vehicle registration by registration_number."""

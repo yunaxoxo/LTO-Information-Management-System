@@ -22,7 +22,9 @@ class Violation:
         self.violation_status = violation_status
         self.fine_amount = fine_amount
         self.license_number = license_number
-        self.plate_number = plate_number  # Nullable — pedestrian violations have no plate
+        self.plate_number = (
+            plate_number  # Nullable — pedestrian violations have no plate
+        )
 
     def __str__(self):
         return (
