@@ -1,13 +1,17 @@
-import streamlit as st
 import pandas as pd
-from utils.ui_helpers import css_style
-from services import dashboard_service as dash_srv
+import streamlit as st
 
-# ── 1. Page Configuration ──────────────────────────────────────────────────── #
-st.set_page_config(page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded")
+from services import dashboard_service as dash_srv
+from utils.ui_helpers import css_style
+
+# ── Page Configuration ──────────────────────────────────────────────────── #
+st.set_page_config(
+    page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded"
+)
 css_style(__file__)
 
-# ── 2. Data Fetching (Cached for 60 seconds for performance) ───────────────── #
+
+# ── Data Fetching (Cached for 60 seconds for performance) ───────────────── #
 @st.cache_data(ttl=60)
 def load_dashboard_data():
     return {
@@ -18,13 +22,14 @@ def load_dashboard_data():
         "expiring_licenses": dash_srv.get_expiring_licenses(),
         "resolved_vios": dash_srv.get_resolved_violations(),
         "avg_fine": dash_srv.get_average_fine(),
-        "trend_data": dash_srv.get_monthly_registration_trend()
+        "trend_data": dash_srv.get_monthly_registration_trend(),
     }
+
 
 # Fetch the live data
 data = load_dashboard_data()
 
-# ── 3. TOP NAVIGATION ──────────────────────────────────────────────────────── #
+# ── TOP NAVIGATION ──────────────────────────────────────────────────────── #
 col_title, col_profile = st.columns([8, 1])
 with col_title:
     st.title("System Overview")
@@ -32,45 +37,45 @@ with col_title:
 
 st.markdown("---")
 
-# ── 4. ROW 1: KPI METRICS ──────────────────────────────────────────────────── #
+# ── ROW 1: KPI METRICS ──────────────────────────────────────────────────── #
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
     st.metric(
-        label="TOTAL REGISTERED DRIVERS", 
-        value=f"{data['total_drivers']:,}", 
-        delta="Live Data"
+        label="TOTAL REGISTERED DRIVERS",
+        value=f"{data['total_drivers']:,}",
+        delta="Live Data",
     )
 with m2:
     st.metric(
-        label="ACTIVE REGISTRATIONS", 
-        value=f"{data['active_regs']:,}", 
-        delta="Stable", 
-        delta_color="off"
+        label="ACTIVE REGISTRATIONS",
+        value=f"{data['active_regs']:,}",
+        delta="Stable",
+        delta_color="off",
     )
 with m3:
     st.metric(
-        label="TOTAL REVENUE (PHP)", 
-        value=f"₱{data['revenue']:,.2f}", 
-        delta="Collected Fines", 
-        delta_color="off"
+        label="TOTAL REVENUE (PHP)",
+        value=f"₱{data['revenue']:,.2f}",
+        delta="Collected Fines",
+        delta_color="off",
     )
 with m4:
     st.metric(
-        label="PENDING VIOLATIONS", 
-        value=f"{data['pending_vios']:,}", 
-        delta="Unpaid Tickets", 
-        delta_color="inverse"
+        label="PENDING VIOLATIONS",
+        value=f"{data['pending_vios']:,}",
+        delta="Unpaid Tickets",
+        delta_color="inverse",
     )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── 5. ROW 2: CHART & STACKED CARDS ────────────────────────────────────────── #
+# ── ROW 2: CHART & STACKED CARDS ────────────────────────────────────────── #
 col_chart, col_cards = st.columns([2.5, 1])
 
 with col_chart:
     st.subheader("Monthly Registration Trend (Current Year)")
-    
+
     # Process chart data
     trend_records = data["trend_data"]
     if not trend_records:
@@ -81,31 +86,31 @@ with col_chart:
         df_trend.set_index("month", inplace=True)
         # Rename column for a cleaner chart legend
         df_trend.rename(columns={"count": "Registrations"}, inplace=True)
-        
+
         st.line_chart(df_trend, use_container_width=True, height=420)
 
 with col_cards:
     st.subheader("System Insights")
-    
+
     with st.container(border=True):
         st.metric(
-            label="Licenses Expiring Soon", 
-            value=f"{data['expiring_licenses']:,}", 
-            delta="Within 30 days", 
-            delta_color="inverse" if data['expiring_licenses'] > 0 else "off"
+            label="Licenses Expiring Soon",
+            value=f"{data['expiring_licenses']:,}",
+            delta="Within 30 days",
+            delta_color="inverse" if data["expiring_licenses"] > 0 else "off",
         )
-        
+
     with st.container(border=True):
         st.metric(
-            label="Violations Resolved", 
-            value=f"{data['resolved_vios']:,}", 
-            delta="Paid/Settled"
+            label="Violations Resolved",
+            value=f"{data['resolved_vios']:,}",
+            delta="Paid/Settled",
         )
-        
+
     with st.container(border=True):
         st.metric(
-            label="Average Fine Amount", 
-            value=f"₱{data['avg_fine']:,.2f}", 
-            delta="Per violation", 
-            delta_color="off"
+            label="Average Fine Amount",
+            value=f"₱{data['avg_fine']:,.2f}",
+            delta="Per violation",
+            delta_color="off",
         )
