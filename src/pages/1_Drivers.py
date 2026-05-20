@@ -2,8 +2,10 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 from controllers import driver_controller as dc
+from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, paginate_df, render_pagination_controls,
+    css_style, render_sidebar, metric_card,
+    paginate_df, render_pagination_controls,
     apply_styler,
     color_license_status, format_license_status,
     color_license_type, format_license_type,
@@ -11,10 +13,31 @@ from utils.ui_helpers import (
 
 st.set_page_config(page_title="Driver Registry", layout="wide")
 css_style(__file__)
+render_sidebar()
+_header = st.empty()  # filled after dialogs are defined (below)
 
+# ── Metric cards ──
+@st.cache_data(ttl=60)
+def _driver_metrics():
+    return {
+        "total":     dash_srv.get_total_drivers_count(),
+        "valid":     dash_srv.get_valid_licenses_count(),
+        "expired":   dash_srv.get_expired_licenses_count(),
+        "suspended": dash_srv.get_suspended_licenses_count(),
+    }
 
-st.title("Driver Registry")
-st.markdown("Manage and monitor driver information, including licenses, violations, and other details.")
+_dm = _driver_metrics()
+m1, m2, m3, m4 = st.columns(4)
+with m1:
+    st.markdown(metric_card("👤 Total Drivers", f"{_dm['total']:,}", "Registered in system", "#1f77b4"), unsafe_allow_html=True)
+with m2:
+    st.markdown(metric_card("✅ Valid Licenses", f"{_dm['valid']:,}", "Active & current", "#2e8b57"), unsafe_allow_html=True)
+with m3:
+    st.markdown(metric_card("🔴 Expired Licenses", f"{_dm['expired']:,}", "Needs renewal", "#d62728"), unsafe_allow_html=True)
+with m4:
+    st.markdown(metric_card("⚠️ Suspended / Revoked", f"{_dm['suspended']:,}", "Restricted licenses", "#ff7f0e"), unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
 
 # Filter option   #
@@ -168,16 +191,22 @@ def edit_driver_dialog(d):
                 st.error(f"Error updating record: {e}")
 
 
-#  Top nav bar  #
-col_search, empty_space, col_filter, col_add = st.columns([4, 1.5, 1.5, 2])
-with col_search:
-    search_query = st.text_input("Search", placeholder="Search Driver Records", label_visibility="collapsed")
-with col_filter:
-    if st.button("Filter", use_container_width=True):
-        filter_dialog()
-with col_add:
-    if st.button("Add Driver", use_container_width=True):
-        add_driver_dialog()
+with _header.container():
+    _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
+    with _ht:
+        st.title("Driver Registry")
+        st.caption("Manage and monitor driver information, licenses, violations, and other details.")
+    with _hs:
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_query = st.text_input("Search", placeholder="Search Driver Records", label_visibility="collapsed")
+    with _hf:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Filter", use_container_width=True):
+            filter_dialog()
+    with _ha:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Add Driver", use_container_width=True):
+            add_driver_dialog()
 
 
 #  #

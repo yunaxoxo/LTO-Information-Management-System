@@ -51,3 +51,60 @@ def get_monthly_registration_trend() -> list:
         ORDER BY MONTH(registration_date)
     """
     return execute_query(query, ())
+
+
+# ── Per-page metric helpers ──────────────────────────────────────────────────
+
+def get_total_drivers_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM drivers", ())
+    return res[0]['val'] if res else 0
+
+def get_valid_licenses_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM drivers WHERE license_status = 'Valid'", ())
+    return res[0]['val'] if res else 0
+
+def get_expired_licenses_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM drivers WHERE license_status = 'Expired'", ())
+    return res[0]['val'] if res else 0
+
+def get_suspended_licenses_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM drivers WHERE license_status IN ('Suspended','Revoked')", ())
+    return res[0]['val'] if res else 0
+
+def get_total_vehicles_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM vehicles", ())
+    return res[0]['val'] if res else 0
+
+def get_most_common_vehicle_type() -> str:
+    res = execute_query(
+        "SELECT vehicle_type, COUNT(*) AS cnt FROM vehicles GROUP BY vehicle_type ORDER BY cnt DESC LIMIT 1", ()
+    )
+    return res[0]['vehicle_type'] if res else "N/A"
+
+def get_total_registrations_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM vehicle_registrations", ())
+    return res[0]['val'] if res else 0
+
+def get_expired_registrations_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM vehicle_registrations WHERE registration_status = 'Expired'", ())
+    return res[0]['val'] if res else 0
+
+def get_expiring_registrations_count() -> int:
+    res = execute_query(
+        """SELECT COUNT(*) AS val FROM vehicle_registrations
+           WHERE registration_status = 'Active'
+           AND expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)""", ()
+    )
+    return res[0]['val'] if res else 0
+
+def get_total_violations_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM traffic_violations", ())
+    return res[0]['val'] if res else 0
+
+def get_contested_violations_count() -> int:
+    res = execute_query("SELECT COUNT(*) AS val FROM traffic_violations WHERE violation_status = 'Contested'", ())
+    return res[0]['val'] if res else 0
+
+def get_total_fines_collected() -> float:
+    res = execute_query("SELECT COALESCE(SUM(fine_amount),0) AS val FROM traffic_violations WHERE violation_status='Paid'", ())
+    return float(res[0]['val']) if res else 0.0

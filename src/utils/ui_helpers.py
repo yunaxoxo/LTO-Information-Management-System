@@ -18,6 +18,58 @@ def css_style(current_file_path):
     except FileNotFoundError:
         st.warning(f"Could not locate CSS at {css_path}. Check your directory structure.")
 
+
+def render_sidebar():
+    """Hides native nav, injects brand header at top, custom icon nav, and bottom utility buttons."""
+    # Globally hide the native Streamlit page navigation
+    st.markdown(
+        "<style>[data-testid='stSidebarNav']{display:none!important;}</style>",
+        unsafe_allow_html=True,
+    )
+    with st.sidebar:
+        # ── Brand header ─────────────────────────────────────────────────────
+        st.markdown(
+            """
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-title">🚗 LTO Management System</div>
+                <div class="sidebar-brand-sub">Land Transportation Office</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # ── Custom navigation with icons ──────────────────────────────────────
+        st.page_link("Dashboard.py",           label="📊  Dashboard")
+        st.page_link("pages/1_Drivers.py",     label="👤  Drivers")
+        st.page_link("pages/2_Vehicles.py",    label="🚗  Vehicles")
+        st.page_link("pages/3_Registrations.py", label="📋  Registrations")
+        st.page_link("pages/4_Violations.py",  label="⚠️  Violations")
+        # ── Bottom utility buttons ────────────────────────────────────────────
+        st.markdown(
+            """
+            <div class="sidebar-bottom">
+                <div class="sidebar-bottom-btn">⚙️&nbsp; Settings</div>
+                <div class="sidebar-bottom-btn">❓&nbsp; Support</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def metric_card(label: str, value: str, sub: str, color: str) -> str:
+    """Returns an HTML metric card string matching the Dashboard style."""
+    return f"""
+    <div style="padding:15px;border-radius:8px;border-top:5px solid {color};
+                box-shadow:0 2px 4px rgba(0,0,0,0.1);
+                border-left:1px solid rgba(128,128,128,0.2);
+                border-right:1px solid rgba(128,128,128,0.2);
+                border-bottom:1px solid rgba(128,128,128,0.2);margin-bottom:0;">
+        <p style="margin:0;font-size:12px;font-weight:600;text-transform:uppercase;opacity:0.7;">{label}</p>
+        <h2 style="margin:5px 0 0 0;font-size:2rem;">{value}</h2>
+        <p style="margin:5px 0 0 0;font-size:13px;opacity:0.7;font-weight:600;">{sub}</p>
+    </div>
+    """
+
+
 # safe string conversion — replaces NaN/None with empty string 
 def safe_str(series: pd.Series) -> pd.Series:
     return series.fillna("").astype(str).str.strip()
