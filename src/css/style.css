@@ -103,19 +103,19 @@ html, body, [class*="css"] {
 h1 { 
     font-size: 2rem !important; 
     font-weight: 700 !important; 
-    color: #0f1b2d !important; 
+    color: var(--text-color) !important; 
     letter-spacing: -0.5px; 
 }
 
 h2 { 
     font-size: 1.25rem !important; 
     font-weight: 600 !important; 
-    color: #1e3a5f !important; 
+    color: var(--text-color) !important; 
 }
 
 [data-testid="metric-container"] { 
-    background: white; 
-    border: 1px solid #e2e8f0; 
+    background: var(--secondary-background-color); 
+    border: 1px solid rgba(128,128,128,0.2); 
     border-radius: 12px; 
     padding: 16px; 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06); 
@@ -125,7 +125,7 @@ h2 {
     font-family: 'Space Mono', monospace !important; 
     font-size: 1.8rem !important; 
     font-weight: 700 !important; 
-    color: #0f1b2d !important; 
+    color: var(--text-color) !important; 
 }
 
 [data-testid="stMetricLabel"] { 
@@ -133,7 +133,8 @@ h2 {
     font-weight: 600 !important; 
     text-transform: uppercase; 
     letter-spacing: 0.08em; 
-    color: #64748b !important; 
+    color: var(--text-color) !important; 
+    opacity: 0.7;
 }
 
 .stButton > button { 
@@ -162,20 +163,20 @@ h2 {
 [data-testid="stDataFrame"] { 
     border-radius: 12px; 
     overflow: hidden; 
-    border: 1px solid #e2e8f0; 
+    border: 1px solid rgba(128,128,128,0.15); 
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); 
 }
 
 .stTextInput > div > div > input, .stSelectbox > div > div, .stDateInput > div > div > input { 
     border-radius: 8px !important; 
-    border-color: #e2e8f0 !important; 
+    border-color: rgba(128,128,128,0.25) !important; 
 }
 
 .streamlit-expanderHeader { 
-    background: #f8fafc; 
+    background: var(--secondary-background-color); 
     border-radius: 8px; 
     font-weight: 600; 
-    color: #1e3a5f; 
+    color: var(--text-color); 
 }
 
 .stAlert { 
@@ -183,6 +184,6 @@ h2 {
 }
 
 hr { 
-    border-color: #e2e8f0 !important; 
+    border-color: rgba(128,128,128,0.2) !important; 
     margin: 1.5rem 0 !important; 
 }

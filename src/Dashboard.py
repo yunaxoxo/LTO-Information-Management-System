@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from utils.ui_helpers import css_style, render_sidebar
+from utils.ui_helpers import css_style, render_sidebar, metric_card
 from services import dashboard_service as dash_srv
 
 st.set_page_config(page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded")
@@ -31,40 +31,16 @@ st.markdown("---")
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
-    st.markdown(f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #1f77b4; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
-        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">👥 Vehicle Owners </p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['total_drivers']:,}</h2>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Registered Drivers</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(metric_card("👥 Vehicle Owners", f"{data['total_drivers']:,}", "↑ Registered Drivers", "#1f77b4", "#2e8b57"), unsafe_allow_html=True)
 
 with m2:
-    st.markdown(f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #17becf; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
-        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">📝 Active Registrations</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['active_regs']:,}</h2>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Registered Vehicles</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(metric_card("📝 Active Registrations", f"{data['active_regs']:,}", "↑ Registered Vehicles", "#17becf", "#2e8b57"), unsafe_allow_html=True)
 
 with m3:
-    st.markdown(f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #ff7f0e; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
-        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">💰 Total Revenue</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">₱{data['revenue']:,.2f}</h2>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #2e8b57; font-weight: 600;">↑ Collected Fines</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(metric_card("💰 Total Revenue", f"₱{data['revenue']:,.2f}", "↑ Collected Fines", "#ff7f0e", "#2e8b57"), unsafe_allow_html=True)
 
 with m4:
-    st.markdown(f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #d62728; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2);">
-        <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">⚠️ Pending Violations</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['pending_vios']:,}</h2>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #ff4b4b; font-weight: 600;">↑ Unpaid Tickets</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(metric_card("⚠️ Pending Violations", f"{data['pending_vios']:,}", "↑ Unpaid Tickets", "#d62728", "#ff4b4b"), unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -94,31 +70,12 @@ with col_cards:
     st.subheader("System Insights")
     
     # CARD 1: Expiring Licenses (Red Border)
-    html_card_1 = f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #ff4b4b; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
-        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Licenses Expiring Soon</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['expiring_licenses']:,}</h2>
-        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Within 30 days</p>
-    </div>
-    """
-    st.markdown(html_card_1, unsafe_allow_html=True)
+    st.markdown(metric_card("Licenses Expiring Soon", f"{data['expiring_licenses']:,}", "Within 30 days", "#ff4b4b"), unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
     
     # CARD 2: Violations Resolved (Green Border)
-    html_card_2 = f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #2e8b57; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
-        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Violations Resolved</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">{data['resolved_vios']:,}</h2>
-        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Paid/Settled</p>
-    </div>
-    """
-    st.markdown(html_card_2, unsafe_allow_html=True)
+    st.markdown(metric_card("Violations Resolved", f"{data['resolved_vios']:,}", "Paid/Settled", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
 
     # CARD 3: Average Fine Amount (Blue Border)
-    html_card_3 = f"""
-    <div style="padding: 15px; border-radius: 8px; border-top: 5px solid #1f77b4; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 1px solid rgba(128,128,128,0.2); border-right: 1px solid rgba(128,128,128,0.2); border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px;">
-        <p style="margin: 0; font-size: 14px; font-weight: 600; text-transform: uppercase; opacity: 0.7;">Average Fine Amount</p>
-        <h2 style="margin: 5px 0 0 0; font-size: 2rem;">₱{data['avg_fine']:,.2f}</h2>
-        <p style="margin: 0; font-size: 12px; opacity: 0.6;">Per violation</p>
-    </div>
-    """
-    st.markdown(html_card_3, unsafe_allow_html=True)
+    st.markdown(metric_card("Average Fine Amount", f"₱{data['avg_fine']:,.2f}", "Per violation", "#1f77b4"), unsafe_allow_html=True)
