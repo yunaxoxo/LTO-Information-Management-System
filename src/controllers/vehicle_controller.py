@@ -17,9 +17,13 @@ def _build_vehicle(data: dict) -> Vehicle:
     Validates and constructs a Vehicle object from raw form data.
     Raises ValueError with a descriptive message on invalid input.
     """
-    plate_number = sanitize_string(data.get("plate_number", ""), "Plate Number", min_len=5)
+    plate_number = sanitize_string(
+        data.get("plate_number", ""), "Plate Number", min_len=5
+    )
     if len(plate_number) > 7:
-        raise ValueError(f"Plate Number must be 5-7 characters. Got {len(plate_number)}.")
+        raise ValueError(
+            f"Plate Number must be 5-7 characters. Got {len(plate_number)}."
+        )
 
     engine_number = sanitize_string(data.get("engine_number", ""), "Engine Number")
     chassis_number = sanitize_string(data.get("chassis_number", ""), "Chassis Number")
@@ -55,6 +59,7 @@ def _build_vehicle(data: dict) -> Vehicle:
 # CRUD Operations
 # ============================================================
 
+
 def create_vehicle(data: dict) -> str:
     """Validates input and creates a new vehicle."""
     vehicle = _build_vehicle(data)
@@ -76,6 +81,7 @@ def delete_vehicle(plate_number: str) -> str:
 # ============================================================
 # Read / Report Operations
 # ============================================================
+
 
 def get_vehicles_by_criteria(filters: dict) -> list:
     """Retrieves vehicles matching user-selected filter criteria."""

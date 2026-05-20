@@ -3,21 +3,23 @@ import math
 import pandas as pd
 import streamlit as st
 
+
 def css_style(current_file_path):
     """
-    Bulletproof CSS loader. Dynamically finds the root src/ directory 
+    Bulletproof CSS loader. Dynamically finds the root src/ directory
     and points to css/style.css regardless of which page calls it.
     """
     # Gets the directory of the file calling this function, then navigates to root / src
-    src_dir = Path(__file__).resolve().parent.parent 
+    src_dir = Path(__file__).resolve().parent.parent
     css_path = src_dir / "css" / "style.css"
-    
+
     try:
         with open(css_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
-        st.warning(f"Could not locate CSS at {css_path}. Check your directory structure.")
-
+        st.warning(
+            f"Could not locate CSS at {css_path}. Check your directory structure."
+        )
 
 def render_sidebar():
     """Hides native nav, injects brand header at top, custom icon nav, and bottom utility buttons."""
@@ -74,6 +76,7 @@ def metric_card(label: str, value: str, sub: str, color: str, sub_color: str = N
 
 
 # safe string conversion — replaces NaN/None with empty string 
+
 def safe_str(series: pd.Series) -> pd.Series:
     return series.fillna("").astype(str).str.strip()
 
@@ -97,14 +100,20 @@ def paginate_df(df: pd.DataFrame, page_key: str, rows_per_page: int = 10):
 
 
 # renders previous / page info / next buttons below the table
-def render_pagination_controls(page_key: str, total_pages: int, paginated_df: pd.DataFrame) -> None:
+def render_pagination_controls(
+    page_key: str, total_pages: int, paginated_df: pd.DataFrame
+) -> None:
     current_page = st.session_state.get(page_key, 1)
     pg_col1, pg_col2, pg_col3 = st.columns([1, 4, 1])
 
     # previous button
     with pg_col1:
-        if st.button("⬅️ Previous", disabled=(current_page == 1),
-                     use_container_width=True, key=f"{page_key}_prev"):
+        if st.button(
+            "⬅️ Previous",
+            disabled=(current_page == 1),
+            use_container_width=True,
+            key=f"{page_key}_prev",
+        ):
             st.session_state[page_key] -= 1
             st.rerun()
 
@@ -118,12 +127,18 @@ def render_pagination_controls(page_key: str, total_pages: int, paginated_df: pd
 
     # next button
     with pg_col3:
-        if st.button("Next ➡️", disabled=(current_page == total_pages),
-                     use_container_width=True, key=f"{page_key}_next"):
+        if st.button(
+            "Next ➡️",
+            disabled=(current_page == total_pages),
+            use_container_width=True,
+            key=f"{page_key}_next",
+        ):
             st.session_state[page_key] += 1
             st.rerun()
 
+
 # ---------------------- END OF PAGINATION ---------------------- #
+
 
 def apply_styler(styler, fn, subset):
     try:
@@ -145,10 +160,10 @@ def color_license_status(val: str) -> str:
 
 def format_license_status(val: str) -> str:
     icons = {
-        "Valid":     "🟢 Valid",
-        "Expired":   "🔴 Expired",
+        "Valid": "🟢 Valid",
+        "Expired": "🔴 Expired",
         "Suspended": "🟠 Suspended",
-        "Revoked":   "⚪ Revoked",
+        "Revoked": "⚪ Revoked",
     }
     return icons.get(val, val)
 
@@ -166,10 +181,11 @@ def color_license_type(val: str) -> str:
 def format_license_type(val: str) -> str:
     short = {
         "Non-Professional": "NON-PROFESSIONAL",
-        "Professional":     "PROFESSIONAL",
-        "Student":          "STUDENT",
+        "Professional": "PROFESSIONAL",
+        "Student": "STUDENT",
     }
     return short.get(val, str(val).upper())
+
 
 # color and icon formatters for Active / Expired / Suspended
 def color_reg_status(val: str) -> str:
@@ -182,8 +198,13 @@ def color_reg_status(val: str) -> str:
 
 
 def format_reg_status(val: str) -> str:
-    icons = {"Active": "🟢 Active", "Expired": "🔴 Expired", "Suspended": "🟠 Suspended"}
+    icons = {
+        "Active": "🟢 Active",
+        "Expired": "🔴 Expired",
+        "Suspended": "🟠 Suspended",
+    }
     return icons.get(val, val)
+
 
 # color and icon formatters for Paid / Unpaid / Contested
 def color_violation_status(val: str) -> str:
@@ -199,6 +220,7 @@ def format_violation_status(val: str) -> str:
     icons = {"Paid": "🟢 Paid", "Unpaid": "🔴 Unpaid", "Contested": "🟠 Contested"}
     return icons.get(val, val)
 
+
 # color badges for the 11 supported vehicle categories
 def color_vehicle_type(val: str) -> str:
     palette = {
@@ -213,8 +235,10 @@ def color_vehicle_type(val: str) -> str:
         "Commercial Truck": "color:#0891b2; background-color:rgba(8,145,178,0.15);",
         "Bus":              "color:#059669; background-color:rgba(5,150,105,0.15);",
         "Light Truck":      "color:#65a30d; background-color:rgba(101,163,13,0.15);",
+
     }
     return palette.get(val, "color:#4b5563; background-color:rgba(75,85,99,0.15);")
+
 
 # formats integer fine amounts as Philippine Peso
 def format_fine(val) -> str:

@@ -9,6 +9,7 @@ from db.query_helpers import build_dynamic_where
 # CREATE
 # ============================================================
 
+
 def register_new_driver(driver):
     """Inserts a new driver record into the database."""
     query = """
@@ -35,6 +36,7 @@ def register_new_driver(driver):
 # ============================================================
 # READ
 # ============================================================
+
 
 @st.cache_data(ttl=300)
 def fetch_drivers_by_criteria(
@@ -82,6 +84,7 @@ def fetch_invalid_licenses():
 # UPDATE
 # ============================================================
 
+
 def update_driver_info(driver):
     """Updates an existing driver record identified by license_number."""
     query = """
@@ -111,6 +114,7 @@ def update_driver_info(driver):
 # ============================================================
 # DELETE
 # ============================================================
+
 
 def delete_driver(license_number):
     """Deletes a driver record by license_number."""

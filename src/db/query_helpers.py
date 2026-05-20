@@ -32,7 +32,11 @@ def build_dynamic_where(filters: dict, column_map: dict):
 
     for filter_key, column_name in column_map.items():
         value = filters.get(filter_key, "ALL")
-        if value is not None and str(value).strip().upper() != "ALL" and str(value).strip() != "":
+        if (
+            value is not None
+            and str(value).strip().upper() != "ALL"
+            and str(value).strip() != ""
+        ):
             conditions.append(f"{column_name} = ?")
             params.append(value)
 
@@ -87,12 +91,14 @@ def validate_positive_int(value, field_name: str):
 def validate_year(value, field_name: str = "Year"):
     """Raises ValueError if year is not in [1900, 2027]."""
     if not isinstance(value, int) or not (1900 <= value <= 2027):
-        raise ValueError(f"{field_name} must be an integer between 1900 and 2027. Got: '{value}'")
+        raise ValueError(
+            f"{field_name} must be an integer between 1900 and 2027. Got: '{value}'"
+        )
 
 
 def validate_date_order(start, end, start_name: str, end_name: str):
     """Raises ValueError if end date is not after start date."""
-    if start >= end:
+    if start > end:
         raise ValueError(f"{end_name} ({end}) must be after {start_name} ({start}).")
 
 
@@ -127,7 +133,9 @@ def to_date_string(value, field_name: str) -> str:
                 f"{field_name} must be a valid date in YYYY-MM-DD format. Got: '{value}'"
             )
         return value
-    raise ValueError(f"{field_name} must be a date or date-string. Got type: {type(value)}")
+    raise ValueError(
+        f"{field_name} must be a date or date-string. Got type: {type(value)}"
+    )
 
 
 def to_datetime_string(value, field_name: str) -> str:
@@ -145,4 +153,6 @@ def to_datetime_string(value, field_name: str) -> str:
                 f"{field_name} must be in 'YYYY-MM-DD HH:MM:SS' format. Got: '{value}'"
             )
         return value
-    raise ValueError(f"{field_name} must be a datetime or string. Got type: {type(value)}")
+    raise ValueError(
+        f"{field_name} must be a datetime or string. Got type: {type(value)}"
+    )
