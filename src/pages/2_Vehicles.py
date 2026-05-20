@@ -3,7 +3,7 @@ import streamlit as st
 from controllers import vehicle_controller as vc
 from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, render_sidebar, metric_card,
+    css_style, render_sidebar, render_page_header,
     safe_str, paginate_df, render_pagination_controls,
     apply_styler, color_vehicle_type,
 )
@@ -11,9 +11,7 @@ from utils.ui_helpers import (
 st.set_page_config(page_title="Vehicle Registry", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  # filled after dialogs are defined (below)
 
-# ── Metric cards ──
 @st.cache_data(ttl=60)
 def _vehicle_metrics():
     return {
@@ -24,17 +22,16 @@ def _vehicle_metrics():
     }
 
 _vm = _vehicle_metrics()
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.markdown(metric_card("🚗 Total Vehicles", f"{_vm['total']:,}", "In the registry", "#1f77b4"), unsafe_allow_html=True)
-with m2:
-    st.markdown(metric_card("🏆 Most Common Type", str(_vm['top_type']), "By fleet count", "#17becf"), unsafe_allow_html=True)
-with m3:
-    st.markdown(metric_card("✅ Active Registrations", f"{_vm['active_regs']:,}", "Currently valid", "#2e8b57"), unsafe_allow_html=True)
-with m4:
-    st.markdown(metric_card("🔴 Expired Registrations", f"{_vm['exp_regs']:,}", "Need renewal", "#d62728"), unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
+render_page_header(
+    title="🚗 Vehicle Registry",
+    subtitle="Manage and monitor all registered vehicles, including ownership, type, and technical details.",
+    metrics=[
+        {"label": "🚗 Total Vehicles",        "value": f"{_vm['total']:,}"},
+        {"label": "🏆 Most Common Type",      "value": str(_vm['top_type'])},
+        {"label": "✅ Active Registrations",   "value": f"{_vm['active_regs']:,}"},
+        {"label": "🔴 Expired Registrations",  "value": f"{_vm['exp_regs']:,}"},
+    ],
+)
 st.markdown("---")
 
 #  Filter option constants  #
@@ -162,26 +159,19 @@ def edit_vehicle_dialog(v):
                 st.error(f"Error updating record: {e}")
 
 
-# ── Header row: title + action buttons (fills _header placeholder at top) ──
-with _header.container():
-    _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
-    with _ht:
-        st.title("Vehicle Registry")
-        st.caption("Manage and monitor all registered vehicles, including ownership, type, and technical details.")
-    with _hs:
-        st.markdown("<br>", unsafe_allow_html=True)
-        search_query = st.text_input(
-            "Search", placeholder="Search by plate, make, model, or type...",
-            label_visibility="collapsed"
-        )
-    with _hf:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Filter", use_container_width=True):
-            filter_dialog()
-    with _ha:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Add Vehicle", use_container_width=True):
-            add_vehicle_dialog()
+# ── Action bar ──
+col_search, _, col_filter, col_add = st.columns([5, 0.3, 1.2, 1.5])
+with col_search:
+    search_query = st.text_input(
+        "Search", placeholder="Search by plate, make, model, or type...",
+        label_visibility="collapsed"
+    )
+with col_filter:
+    if st.button("Filter", use_container_width=True):
+        filter_dialog()
+with col_add:
+    if st.button("Add Vehicle", use_container_width=True):
+        add_vehicle_dialog()
 
 
 #  Fetch data  #

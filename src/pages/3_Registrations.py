@@ -4,7 +4,7 @@ import streamlit as st
 from controllers import registration_controller as rc
 from services import dashboard_service as dash_srv
 from utils.ui_helpers import (
-    css_style, render_sidebar, metric_card,
+    css_style, render_sidebar, render_page_header,
     paginate_df, render_pagination_controls,
     apply_styler,
     color_reg_status, format_reg_status,
@@ -13,9 +13,7 @@ from utils.ui_helpers import (
 st.set_page_config(page_title="Vehicle Registrations", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  # filled after dialogs are defined (below)
 
-# ── Metric cards ──
 @st.cache_data(ttl=60)
 def _reg_metrics():
     return {
@@ -26,17 +24,16 @@ def _reg_metrics():
     }
 
 _rm = _reg_metrics()
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.markdown(metric_card("📋 Total Registrations", f"{_rm['total']:,}", "All records", "#1f77b4"), unsafe_allow_html=True)
-with m2:
-    st.markdown(metric_card("✅ Active", f"{_rm['active']:,}", "Currently valid", "#2e8b57"), unsafe_allow_html=True)
-with m3:
-    st.markdown(metric_card("🔴 Expired", f"{_rm['expired']:,}", "Past expiration date", "#d62728"), unsafe_allow_html=True)
-with m4:
-    st.markdown(metric_card("⏰ Expiring Soon", f"{_rm['expiring']:,}", "Within 30 days", "#ff7f0e"), unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
+render_page_header(
+    title="📋 Vehicle Registrations",
+    subtitle="Manage and track vehicle registration records, validity periods, and registration status.",
+    metrics=[
+        {"label": "📋 Total Registrations", "value": f"{_rm['total']:,}"},
+        {"label": "✅ Active",              "value": f"{_rm['active']:,}"},
+        {"label": "🔴 Expired",             "value": f"{_rm['expired']:,}"},
+        {"label": "⏰ Expiring Soon",       "value": f"{_rm['expiring']:,}"},
+    ],
+)
 st.markdown("---")
 
 #  Filter option constants  #
@@ -161,26 +158,19 @@ def edit_registration_dialog(r):
                     st.error(f"Error updating record: {e}")
 
 
-# ── Header row: title + action buttons (fills _header placeholder at top) ──
-with _header.container():
-    _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
-    with _ht:
-        st.title("Vehicle Registrations")
-        st.caption("Manage and track vehicle registration records, validity periods, and registration status.")
-    with _hs:
-        st.markdown("<br>", unsafe_allow_html=True)
-        search_query = st.text_input(
-            "Search", placeholder="Search by registration number or plate number...",
-            label_visibility="collapsed"
-        )
-    with _hf:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Filter", use_container_width=True):
-            filter_dialog()
-    with _ha:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Add Registration", use_container_width=True):
-            add_registration_dialog()
+# ── Action bar ──
+col_search, _, col_filter, col_add = st.columns([5, 0.3, 1.2, 1.5])
+with col_search:
+    search_query = st.text_input(
+        "Search", placeholder="Search by registration number or plate number...",
+        label_visibility="collapsed"
+    )
+with col_filter:
+    if st.button("Filter", use_container_width=True):
+        filter_dialog()
+with col_add:
+    if st.button("Add Registration", use_container_width=True):
+        add_registration_dialog()
 
 
 #  Fetch data  #

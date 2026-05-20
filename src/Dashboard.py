@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from utils.ui_helpers import css_style, render_sidebar
+from utils.ui_helpers import css_style, render_sidebar, render_page_header
 from services import dashboard_service as dash_srv
 
 st.set_page_config(page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded")
@@ -23,8 +23,10 @@ def load_dashboard_data():
 
 data = load_dashboard_data()
 
-st.title("System Overview")
-st.markdown("Real-time performance metrics for the Land Transportation Office")
+render_page_header(
+    title="📊 System Overview",
+    subtitle="Real-time performance metrics for the Land Transportation Office",
+)
 
 st.markdown("---")
 

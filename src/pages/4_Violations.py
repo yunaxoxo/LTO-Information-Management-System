@@ -10,7 +10,7 @@ from utils.ui_helpers import (
     color_violation_status,
     css_style,
     render_sidebar,
-    metric_card,
+    render_page_header,
     format_fine,
     format_violation_status,
     paginate_df,
@@ -20,9 +20,7 @@ from utils.ui_helpers import (
 st.set_page_config(page_title="Traffic Violations", layout="wide")
 css_style(__file__)
 render_sidebar()
-_header = st.empty()  # filled after dialogs are defined (below)
 
-# ── Metric cards ──
 @st.cache_data(ttl=60)
 def _vio_metrics():
     return {
@@ -33,17 +31,16 @@ def _vio_metrics():
     }
 
 _vim = _vio_metrics()
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.markdown(metric_card("⚠️ Total Violations", f"{_vim['total']:,}", "All records", "#1f77b4"), unsafe_allow_html=True)
-with m2:
-    st.markdown(metric_card("🔴 Unpaid", f"{_vim['unpaid']:,}", "Pending payment", "#d62728"), unsafe_allow_html=True)
-with m3:
-    st.markdown(metric_card("✅ Resolved", f"{_vim['resolved']:,}", "Paid / Settled", "#2e8b57"), unsafe_allow_html=True)
-with m4:
-    st.markdown(metric_card("🟠 Contested", f"{_vim['contested']:,}", "Under dispute", "#ff7f0e"), unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
+render_page_header(
+    title="⚠️ Traffic Violations",
+    subtitle="Track and manage all recorded traffic infractions, fines, and enforcement actions.",
+    metrics=[
+        {"label": "⚠️ Total Violations", "value": f"{_vim['total']:,}"},
+        {"label": "🔴 Unpaid",           "value": f"{_vim['unpaid']:,}"},
+        {"label": "✅ Resolved",          "value": f"{_vim['resolved']:,}"},
+        {"label": "🟠 Contested",         "value": f"{_vim['contested']:,}"},
+    ],
+)
 st.markdown("---")
 
 STATUS_FILTER_OPTIONS = ["All Statuses", "Unpaid", "Paid", "Contested"]
@@ -355,27 +352,20 @@ def edit_violation_dialog(v):
                 st.error(f"Error updating record: {e}")
 
 
-# ── Header row: title + action buttons (fills _header placeholder at top) ──
-with _header.container():
-    _ht, _hs, _hf, _ha = st.columns([4, 3.5, 1.2, 1.5])
-    with _ht:
-        st.title("Traffic Violations")
-        st.caption("Track and manage all recorded traffic infractions, fines, and enforcement actions.")
-    with _hs:
-        st.markdown("<br>", unsafe_allow_html=True)
-        search_query = st.text_input(
-            "Search",
-            placeholder="Search by TOP number, type, location, license, or plate...",
-            label_visibility="collapsed",
-        )
-    with _hf:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Filter", use_container_width=True):
-            filter_dialog()
-    with _ha:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Add Violation", use_container_width=True):
-            add_violation_dialog()
+# ── Action bar ──
+col_search, _, col_filter, col_add = st.columns([5, 0.3, 1.2, 1.5])
+with col_search:
+    search_query = st.text_input(
+        "Search",
+        placeholder="Search by TOP number, type, location, license, or plate...",
+        label_visibility="collapsed",
+    )
+with col_filter:
+    if st.button("Filter", use_container_width=True):
+        filter_dialog()
+with col_add:
+    if st.button("Add Violation", use_container_width=True):
+        add_violation_dialog()
 
 #  Active filter badge  #
 f = st.session_state.vio_filters
