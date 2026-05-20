@@ -44,6 +44,14 @@ def _build_driver(data: dict) -> Driver:
     expiration = to_date_string(data.get("license_expiration_date"), "License Expiration Date")
     validate_date_order(issuance, expiration, "Issuance Date", "Expiration Date")
 
+    # Dynamic status adjustment based on expiration date
+    from datetime import date
+    today_str = date.today().strftime("%Y-%m-%d")
+    if license_status == "Expired" and expiration >= today_str:
+        license_status = "Valid"
+    elif license_status == "Valid" and expiration < today_str:
+        license_status = "Expired"
+
     return Driver(
         license_number=license_number,
         full_name=full_name,

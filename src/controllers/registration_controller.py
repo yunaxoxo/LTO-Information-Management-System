@@ -31,6 +31,14 @@ def _build_registration(data: dict) -> Registration:
     exp_date = to_date_string(data.get("expiration_date"), "Expiration Date")
     validate_date_order(reg_date, exp_date, "Registration Date", "Expiration Date")
 
+    # Dynamic status adjustment based on expiration date
+    from datetime import date
+    today_str = date.today().strftime("%Y-%m-%d")
+    if registration_status == "Expired" and exp_date >= today_str:
+        registration_status = "Active"
+    elif registration_status == "Active" and exp_date < today_str:
+        registration_status = "Expired"
+
     return Registration(
         registration_number=registration_number,
         registration_date=reg_date,
