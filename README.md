@@ -160,7 +160,7 @@ DB_NAME = "lto_system"
 From the project root directory:
 
 ```bash
-streamlit run src/dashboard.py
+streamlit run src/Dashboard.py
 ```
 
 The app will open in your browser at **http://localhost:8501**.
