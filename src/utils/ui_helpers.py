@@ -33,7 +33,7 @@ def render_sidebar():
         st.markdown(
             """
             <div class="sidebar-brand">
-                <div class="sidebar-brand-title">🚗 LTO Management System</div>
+                <div class="sidebar-brand-title">LTO Management System</div>
                 <div class="sidebar-brand-sub">Land Transportation Office</div>
             </div>
             """,
