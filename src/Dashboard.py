@@ -1,17 +1,13 @@
-import pandas as pd
 import streamlit as st
-
+import pandas as pd
+import altair as alt
+from utils.ui_helpers import css_style, render_sidebar, metric_card
 from services import dashboard_service as dash_srv
-from utils.ui_helpers import css_style
 
-# ── Page Configuration ──────────────────────────────────────────────────── #
-st.set_page_config(
-    page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="LTO Dashboard", layout="wide", initial_sidebar_state="expanded")
 css_style(__file__)
+render_sidebar()
 
-
-# ── Data Fetching (Cached for 60 seconds for performance) ───────────────── #
 @st.cache_data(ttl=60)
 def load_dashboard_data():
     return {
@@ -22,95 +18,64 @@ def load_dashboard_data():
         "expiring_licenses": dash_srv.get_expiring_licenses(),
         "resolved_vios": dash_srv.get_resolved_violations(),
         "avg_fine": dash_srv.get_average_fine(),
-        "trend_data": dash_srv.get_monthly_registration_trend(),
+        "trend_data": dash_srv.get_monthly_registration_trend()
     }
 
-
-# Fetch the live data
 data = load_dashboard_data()
 
-# ── TOP NAVIGATION ──────────────────────────────────────────────────────── #
-col_title, col_profile = st.columns([8, 1])
-with col_title:
-    st.title("System Overview")
-    st.markdown("Real-time performance metrics for the Land Transportation Office")
+st.title("System Overview")
+st.markdown("Real-time performance metrics for the Land Transportation Office")
 
 st.markdown("---")
 
-# ── ROW 1: KPI METRICS ──────────────────────────────────────────────────── #
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
-    st.metric(
-        label="TOTAL REGISTERED DRIVERS",
-        value=f"{data['total_drivers']:,}",
-        delta="Live Data",
-    )
+    st.markdown(metric_card("👥 Vehicle Owners", f"{data['total_drivers']:,}", "↑ Registered Drivers", "#1f77b4", "#2e8b57"), unsafe_allow_html=True)
+
 with m2:
-    st.metric(
-        label="ACTIVE REGISTRATIONS",
-        value=f"{data['active_regs']:,}",
-        delta="Stable",
-        delta_color="off",
-    )
+    st.markdown(metric_card("📝 Active Registrations", f"{data['active_regs']:,}", "↑ Registered Vehicles", "#17becf", "#2e8b57"), unsafe_allow_html=True)
+
 with m3:
-    st.metric(
-        label="TOTAL REVENUE (PHP)",
-        value=f"₱{data['revenue']:,.2f}",
-        delta="Collected Fines",
-        delta_color="off",
-    )
+    st.markdown(metric_card("💰 Total Revenue", f"₱{data['revenue']:,.2f}", "↑ Collected Fines", "#ff7f0e", "#2e8b57"), unsafe_allow_html=True)
+
 with m4:
-    st.metric(
-        label="PENDING VIOLATIONS",
-        value=f"{data['pending_vios']:,}",
-        delta="Unpaid Tickets",
-        delta_color="inverse",
-    )
+    st.markdown(metric_card("⚠️ Pending Violations", f"{data['pending_vios']:,}", "↑ Unpaid Tickets", "#d62728", "#ff4b4b"), unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── ROW 2: CHART & STACKED CARDS ────────────────────────────────────────── #
 col_chart, col_cards = st.columns([2.5, 1])
 
 with col_chart:
     st.subheader("Monthly Registration Trend (Current Year)")
-
-    # Process chart data
+    
     trend_records = data["trend_data"]
     if not trend_records:
         st.info("No registration data available for the current year.")
     else:
-        # Convert DB dicts to a pandas DataFrame and set the month as the index
         df_trend = pd.DataFrame(trend_records)
-        df_trend.set_index("month", inplace=True)
-        # Rename column for a cleaner chart legend
         df_trend.rename(columns={"count": "Registrations"}, inplace=True)
-
-        st.line_chart(df_trend, use_container_width=True, height=420)
+        
+        month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        
+        chart = alt.Chart(df_trend).mark_bar().encode(
+            x=alt.X('month', sort=month_order, title="Month"),
+            y=alt.Y('Registrations', title="Registrations")
+        ).properties(height=420)
+        
+        st.altair_chart(chart, use_container_width=True)
 
 with col_cards:
     st.subheader("System Insights")
+    
+    # CARD 1: Expiring Licenses (Red Border)
+    st.markdown(metric_card("Licenses Expiring Soon", f"{data['expiring_licenses']:,}", "Within 30 days", "#ff4b4b"), unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+    
+    # CARD 2: Violations Resolved (Green Border)
+    st.markdown(metric_card("Violations Resolved", f"{data['resolved_vios']:,}", "Paid/Settled", "#2e8b57"), unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
 
-    with st.container(border=True):
-        st.metric(
-            label="Licenses Expiring Soon",
-            value=f"{data['expiring_licenses']:,}",
-            delta="Within 30 days",
-            delta_color="inverse" if data["expiring_licenses"] > 0 else "off",
-        )
-
-    with st.container(border=True):
-        st.metric(
-            label="Violations Resolved",
-            value=f"{data['resolved_vios']:,}",
-            delta="Paid/Settled",
-        )
-
-    with st.container(border=True):
-        st.metric(
-            label="Average Fine Amount",
-            value=f"₱{data['avg_fine']:,.2f}",
-            delta="Per violation",
-            delta_color="off",
-        )
+    # CARD 3: Average Fine Amount (Blue Border)
+    st.markdown(metric_card("Average Fine Amount", f"₱{data['avg_fine']:,.2f}", "Per violation", "#1f77b4"), unsafe_allow_html=True)
