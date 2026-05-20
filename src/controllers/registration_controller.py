@@ -1,15 +1,14 @@
 # Controller for vehicle registration operations
 # Validates all inputs before delegating to the service layer
-from models.registration_model import Registration
-from services import registration_service
 from db.query_helpers import (
-    validate_not_empty,
-    validate_in_set,
-    validate_date_order,
+    VALID_REGISTRATION_STATUSES,
     sanitize_string,
     to_date_string,
-    VALID_REGISTRATION_STATUSES,
+    validate_date_order,
+    validate_in_set,
 )
+from models.registration_model import Registration
+from services import registration_service
 
 
 def _build_registration(data: dict) -> Registration:
@@ -20,12 +19,16 @@ def _build_registration(data: dict) -> Registration:
     registration_number = sanitize_string(
         data.get("registration_number", ""), "Registration Number", min_len=1
     )
-    plate_number = sanitize_string(data.get("plate_number", ""), "Plate Number", min_len=5)
+    plate_number = sanitize_string(
+        data.get("plate_number", ""), "Plate Number", min_len=5
+    )
 
     registration_status = sanitize_string(
         data.get("registration_status", ""), "Registration Status"
     )
-    validate_in_set(registration_status, VALID_REGISTRATION_STATUSES, "Registration Status")
+    validate_in_set(
+        registration_status, VALID_REGISTRATION_STATUSES, "Registration Status"
+    )
 
     reg_date = to_date_string(data.get("registration_date"), "Registration Date")
     exp_date = to_date_string(data.get("expiration_date"), "Expiration Date")
@@ -33,6 +36,7 @@ def _build_registration(data: dict) -> Registration:
 
     # Dynamic status adjustment based on expiration date
     from datetime import date
+
     today_str = date.today().strftime("%Y-%m-%d")
     if registration_status == "Expired" and exp_date >= today_str:
         registration_status = "Active"
@@ -51,6 +55,7 @@ def _build_registration(data: dict) -> Registration:
 # ============================================================
 # CRUD Operations
 # ============================================================
+
 
 def create_vehicle_registration(data: dict) -> str:
     """Validates input and creates a new registration."""
@@ -73,6 +78,7 @@ def delete_registration(registration_number: str) -> str:
 # ============================================================
 # Read / Report Operations
 # ============================================================
+
 
 def get_registrations_by_criteria(filters: dict) -> list:
     """Retrieves registrations matching user-selected filter criteria."""

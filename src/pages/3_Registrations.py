@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import pandas as pd
 import streamlit as st
 from controllers import registration_controller as rc
@@ -64,7 +64,11 @@ def add_registration_dialog():
             plate_number = st.text_input("Plate Number *",        placeholder="ABC1234")
             reg_date     = st.date_input("Registration Date *",   value=date.today())
         with col2:
-            exp_date   = st.date_input("Expiration Date *", value=date.today())
+            exp_date   = st.date_input(
+                "Expiration Date *",
+                value=reg_date + timedelta(days=1),
+                min_value=reg_date + timedelta(days=1)
+            )
             reg_status = st.selectbox("Registration Status *", STATUS_OPTS)
         if st.form_submit_button("Add Registration", use_container_width=True, type="primary"):
             if not reg_number or not plate_number:
@@ -114,9 +118,14 @@ def edit_registration_dialog(r):
                 value=r["Registration Date"] if isinstance(r.get("Registration Date"), date) else date.today()
             )
         with col2:
+            exp_val = r["Expiration Date"] if isinstance(r.get("Expiration Date"), date) else date.today()
+            min_exp = new_reg_date + timedelta(days=1)
+            if exp_val < min_exp:
+                exp_val = min_exp
             new_exp_date = st.date_input(
                 "Expiration Date",
-                value=r["Expiration Date"] if isinstance(r.get("Expiration Date"), date) else date.today()
+                value=exp_val,
+                min_value=min_exp
             )
             new_status = st.selectbox("Status", STATUS_OPTS, index=stat_idx)
         if st.form_submit_button("Save Changes", use_container_width=True):

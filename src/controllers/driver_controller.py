@@ -1,19 +1,18 @@
 # Controller for driver-related operations
 # Validates all inputs before delegating to the service layer
-from models.driver_model import Driver
-from services import driver_service
 from db.query_helpers import (
-    validate_not_empty,
-    validate_in_set,
-    validate_regex,
-    validate_date_order,
+    LICENSE_NUMBER_REGEX,
+    VALID_LICENSE_STATUSES,
+    VALID_LICENSE_TYPES,
+    VALID_SEX,
     sanitize_string,
     to_date_string,
-    LICENSE_NUMBER_REGEX,
-    VALID_SEX,
-    VALID_LICENSE_TYPES,
-    VALID_LICENSE_STATUSES,
+    validate_date_order,
+    validate_in_set,
+    validate_regex,
 )
+from models.driver_model import Driver
+from services import driver_service
 
 
 def _build_driver(data: dict) -> Driver:
@@ -22,7 +21,9 @@ def _build_driver(data: dict) -> Driver:
     Raises ValueError with a descriptive message on invalid input.
     """
     # Required string fields
-    license_number = sanitize_string(data.get("license_number", ""), "License Number", min_len=1)
+    license_number = sanitize_string(
+        data.get("license_number", ""), "License Number", min_len=1
+    )
     validate_regex(license_number, LICENSE_NUMBER_REGEX, "License Number")
 
     full_name = sanitize_string(data.get("full_name", ""), "Full Name", min_len=2)
@@ -40,12 +41,17 @@ def _build_driver(data: dict) -> Driver:
 
     # Date fields
     birthday = to_date_string(data.get("birthday"), "Birthday")
-    issuance = to_date_string(data.get("license_issuance_date"), "License Issuance Date")
-    expiration = to_date_string(data.get("license_expiration_date"), "License Expiration Date")
+    issuance = to_date_string(
+        data.get("license_issuance_date"), "License Issuance Date"
+    )
+    expiration = to_date_string(
+        data.get("license_expiration_date"), "License Expiration Date"
+    )
     validate_date_order(issuance, expiration, "Issuance Date", "Expiration Date")
 
     # Dynamic status adjustment based on expiration date
     from datetime import date
+
     today_str = date.today().strftime("%Y-%m-%d")
     if license_status == "Expired" and expiration >= today_str:
         license_status = "Valid"
@@ -68,6 +74,7 @@ def _build_driver(data: dict) -> Driver:
 # ============================================================
 # CRUD Operations
 # ============================================================
+
 
 def create_driver(data: dict) -> str:
     """Validates input and creates a new driver."""
@@ -92,14 +99,15 @@ def delete_driver(license_number: str) -> str:
 # Read / Report Operations
 # ============================================================
 
+
 def get_drivers_by_criteria(filters: dict) -> list:
     """
     REPORT 1: Retrieves drivers matching the user-selected criteria.
     Accepts the frontend filter dict and maps keys to the service layer.
     """
     return driver_service.fetch_drivers_by_criteria(
-        license_type=filters.get("license_type"),         # list from multiselect
-        license_status=filters.get("license_status"),                     # list from multiselect
+        license_type=filters.get("license_type"),  # list from multiselect
+        license_status=filters.get("license_status"),  # list from multiselect
         sex=filters.get("sex", "ALL"),
         min_age=filters.get("min_age"),
         max_age=filters.get("max_age"),
