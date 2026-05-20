@@ -51,7 +51,7 @@ LTO-Information-Management-System/
 ├── requirements.txt            # Python dependencies
 ├── README.md
 └── src/
-    ├── main.py                 # Streamlit entry point (dashboard)
+    ├── dashboard.py            # Streamlit entry point (dashboard)
     ├── pages/                  # Streamlit multi-page UI
     │   ├── 1_Drivers.py
     │   ├── 2_Vehicles.py
@@ -143,7 +143,7 @@ mkdir -p .streamlit
 Then edit `.streamlit/secrets.toml`:
 
 ```toml
-["DB_CREDENTIALS"]
+[DB_CREDENTIALS]
 DB_HOST = "localhost"
 DB_PORT = 3306
 DB_USER = "lto_admin"
@@ -160,8 +160,7 @@ DB_NAME = "lto_system"
 From the project root directory:
 
 ```bash
-cd src
-streamlit run main.py
+streamlit run src/dashboard.py
 ```
 
 The app will open in your browser at **http://localhost:8501**.
